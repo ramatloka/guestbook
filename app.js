@@ -370,17 +370,27 @@ function showQrPopup(nama, qrStr) {
   });
 }
 
+// =========================================
+// VARIABEL PALET WARNA TIKET (GLOBAL)
+// =========================================
+const APP_THEMES_LOCAL = {
+    "classic_gold": { bg: "#fdfaf3", dark: "#846924", light: "#b39343", grad: "linear-gradient(to right, #cfaf57, #a9852c)", textMain: "#333333", textMuted: "#999999", cardBg: "#ffffff", border: "#f0e6d2" },
+    "royal_navy": { bg: "#f0f4f8", dark: "#1a365d", light: "#3182ce", grad: "linear-gradient(to right, #4299e1, #2b6cb0)", textMain: "#1a202c", textMuted: "#718096", cardBg: "#ffffff", border: "#e2e8f0" },
+    "midnight": { bg: "#f7fafc", dark: "#1a202c", light: "#4a5568", grad: "linear-gradient(to right, #718096, #2d3748)", textMain: "#1a202c", textMuted: "#718096", cardBg: "#ffffff", border: "#e2e8f0" },
+    "emerald": { bg: "#f0fff4", dark: "#22543d", light: "#38a169", grad: "linear-gradient(to right, #48bb78, #276749)", textMain: "#22543d", textMuted: "#718096", cardBg: "#ffffff", border: "#c6f6d5" }
+};
+
 function downloadDigitalTicket(qrUrl, guestName) {
   Swal.fire({ title: 'Menyiapkan Tiket...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
   let activeThemeKey = document.getElementById('adminAppTheme') ? document.getElementById('adminAppTheme').value : "classic_gold";
-  let tColor = APP_THEMES[activeThemeKey] || APP_THEMES["classic_gold"];
+  let tColor = APP_THEMES_LOCAL[activeThemeKey] || APP_THEMES_LOCAL["classic_gold"];
   let elName = document.getElementById('adminEventName'); let elDate = document.getElementById('adminEventDate'); let elLoc = document.getElementById('adminEventLocation'); let elTitle = document.getElementById('adminEventTitle');
   let eventName = (elName && elName.value) ? elName.value : (elTitle && elTitle.value ? elTitle.value : "EVENT TICKET");
   let eventDate = (elDate && elDate.value) ? elDate.value : ""; let eventLoc = (elLoc && elLoc.value) ? elLoc.value : "";
   let dateLocText = ""; if (eventDate && eventLoc) dateLocText = eventDate + "  |  " + eventLoc; else if (eventDate) dateLocText = eventDate; else if (eventLoc) dateLocText = eventLoc;
   
   const img = new Image();
-  img.crossOrigin = "Anonymous"; // Kunci bypass pengamanan browser
+  img.crossOrigin = "Anonymous"; 
   img.onload = () => {
     try {
       const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = 500; canvas.height = 700; ctx.fillStyle = tColor.cardBg; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = tColor.border; ctx.lineWidth = 8; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40); ctx.strokeStyle = tColor.light; ctx.lineWidth = 2; ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60); ctx.fillStyle = tColor.dark; ctx.textAlign = "center"; let titleFontSize = 32; 
@@ -393,7 +403,7 @@ function downloadDigitalTicket(qrUrl, guestName) {
       ctx.fillText(guestName.toUpperCase(), canvas.width / 2, 220); ctx.fillStyle = tColor.bg; ctx.fillRect(115, 255, 270, 270); ctx.drawImage(img, 125, 265, 250, 250); ctx.fillStyle = tColor.textMuted; ctx.font = "600 14px sans-serif"; ctx.fillText("*Tunjukkan tiket ini kepada petugas di pintu masuk", canvas.width / 2, 580); ctx.fillStyle = tColor.light; ctx.font = "bold 18px sans-serif"; ctx.fillText("R A M A T L O K A", canvas.width / 2, 630);
       
       const a = document.createElement('a'); a.style.display = 'none'; a.href = canvas.toDataURL('image/png'); let safeNameForFile = guestName.replace(/[^a-z0-9]/gi, '_').toLowerCase(); a.download = 'Tiket_' + safeNameForFile + '.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); Swal.close(); 
-    } catch(err) { Swal.close(); window.open(qrUrl, '_blank'); } // Jika tetap diblokir, buka QR polos
+    } catch(err) { Swal.close(); window.open(qrUrl, '_blank'); }
   };
   img.onerror = () => { Swal.close(); window.open(qrUrl, '_blank'); };
   img.src = qrUrl;
@@ -402,10 +412,10 @@ function downloadDigitalTicket(qrUrl, guestName) {
 function printDigitalTicket(qrUrl, guestName) {
   Swal.fire({ title: 'Menyiapkan Cetakan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
   let activeThemeKey = document.getElementById('adminAppTheme') ? document.getElementById('adminAppTheme').value : "classic_gold";
-  let tColor = APP_THEMES[activeThemeKey] || APP_THEMES["classic_gold"];
+  let tColor = APP_THEMES_LOCAL[activeThemeKey] || APP_THEMES_LOCAL["classic_gold"];
   let elName = document.getElementById('adminEventName'); let elDate = document.getElementById('adminEventDate'); let elLoc = document.getElementById('adminEventLocation'); let elTitle = document.getElementById('adminEventTitle');
   let eventName = (elName && elName.value) ? elName.value : (elTitle && elTitle.value ? elTitle.value : "EVENT TICKET");
-  let eventDate = (elDate && elDate.value) ? eventDate.value : ""; let eventLoc = (elLoc && elLoc.value) ? elLoc.value : "";
+  let eventDate = (elDate && elDate.value) ? elDate.value : ""; let eventLoc = (elLoc && elLoc.value) ? elLoc.value : "";
   let dateLocText = ""; if (eventDate && eventLoc) dateLocText = eventDate + "  |  " + eventLoc; else if (eventDate) dateLocText = eventDate; else if (eventLoc) dateLocText = eventLoc;
   
   const img = new Image();
@@ -553,7 +563,9 @@ async function downloadAllQRZip() {
     if(selectedGuestsForZip.size === 0) { Swal.fire('Pilih Tamu', 'Silakan centang minimal satu nama tamu pada tabel terlebih dahulu.', 'info'); return; }
     let guestsToDownload = filteredGuestData.filter(g => selectedGuestsForZip.has(g.qrString));
     Swal.fire({ title: 'Membuat Arsip ZIP...', text: 'Merakit ' + guestsToDownload.length + ' Tiket QR. Proses ini memakan waktu beberapa saat...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    let zip = new JSZip(); let imgFolder = zip.folder("Tiket_Tamu"); let activeThemeKey = document.getElementById('adminAppTheme') ? document.getElementById('adminAppTheme').value : "classic_gold"; let tColor = APP_THEMES[activeThemeKey] || APP_THEMES["classic_gold"]; let elName = document.getElementById('adminEventName'); let elDate = document.getElementById('adminEventDate'); let elLoc = document.getElementById('adminEventLocation'); let elTitle = document.getElementById('adminEventTitle'); let eventName = (elName && elName.value) ? elName.value : (elTitle && elTitle.value ? elTitle.value : "EVENT TICKET"); let eventDate = (elDate && elDate.value) ? elDate.value : ""; let eventLoc = (elLoc && elLoc.value) ? elLoc.value : "";
+    let zip = new JSZip(); let imgFolder = zip.folder("Tiket_Tamu"); let activeThemeKey = document.getElementById('adminAppTheme') ? document.getElementById('adminAppTheme').value : "classic_gold"; 
+    let tColor = APP_THEMES_LOCAL[activeThemeKey] || APP_THEMES_LOCAL["classic_gold"]; // <-- BUG FIX PALET WARNA
+    let elName = document.getElementById('adminEventName'); let elDate = document.getElementById('adminEventDate'); let elLoc = document.getElementById('adminEventLocation'); let elTitle = document.getElementById('adminEventTitle'); let eventName = (elName && elName.value) ? elName.value : (elTitle && elTitle.value ? elTitle.value : "EVENT TICKET"); let eventDate = (elDate && elDate.value) ? elDate.value : ""; let eventLoc = (elLoc && elLoc.value) ? elLoc.value : "";
     let dateLocText = ""; if (eventDate && eventLoc) dateLocText = eventDate + "  |  " + eventLoc; else if (eventDate) dateLocText = eventDate; else if (eventLoc) dateLocText = eventLoc;
     
     let fetchPromises = guestsToDownload.map(g => {
@@ -571,7 +583,7 @@ async function downloadAllQRZip() {
                     while (ctx.measureText(guestName.toUpperCase()).width > canvas.width - 100 && nameFontSize > 14) { nameFontSize -= 2; ctx.font = "bold " + nameFontSize + "px sans-serif"; }
                     ctx.fillText(guestName.toUpperCase(), canvas.width / 2, 220); ctx.fillStyle = tColor.bg; ctx.fillRect(115, 255, 270, 270); ctx.drawImage(img, 125, 265, 250, 250); ctx.fillStyle = tColor.textMuted; ctx.font = "600 14px sans-serif"; ctx.fillText("*Tunjukkan tiket ini kepada petugas di pintu masuk", canvas.width / 2, 580); ctx.fillStyle = tColor.light; ctx.font = "bold 18px sans-serif"; ctx.fillText("R A M A T L O K A", canvas.width / 2, 630);
                     canvas.toBlob(function(finalBlob) { imgFolder.file(fileName, finalBlob); resolve(); }, "image/png");
-                } catch(e) { resolve(); } // Jika gagal, lewati tiket ini agar ZIP tidak macet
+                } catch(e) { resolve(); }
             }; 
             img.onerror = () => { resolve(); }; 
             img.src = qrUrl;
