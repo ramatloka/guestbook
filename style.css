@@ -96,6 +96,11 @@ body.tv-mode { padding: 0; margin: 0; justify-content: center; overflow: hidden;
 .tv-ticker-content { display: inline-block; white-space: nowrap; padding-left: 100vw; animation: marqueeAnimation 25s linear infinite; font-weight: 900; color: #ffffff; font-size: 2.5rem; letter-spacing: 4px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
 
 @media (max-width: 600px) {
+    /* Aturan untuk menjinakkan SEMUA jenis popup SweetAlert di HP */
+    .swal2-popup { width: 90% !important; max-width: 350px !important; padding: 20px 15px !important; box-sizing: border-box !important; font-size: 0.85rem !important; }
+    .swal2-title { font-size: 1.2rem !important; }
+    
+    /* Aturan khusus untuk form input di popup */
     .luxury-popup { width: 90% !important; padding: 25px 15px !important; }
     .luxury-popup .swal2-input, .luxury-popup .swal2-select { width: 100% !important; max-width: 100% !important; margin: 10px 0 !important; box-sizing: border-box !important; font-size: 16px !important; }
     .luxury-title { font-size: 1.4rem !important; }
