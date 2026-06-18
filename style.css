@@ -86,17 +86,51 @@ body.tv-mode { padding: 0; margin: 0; justify-content: center; overflow: hidden;
 .tv-branding { text-align: right; padding-right: 40px; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 8px; color: var(--gold-light); font-size: 1.2rem; text-transform: uppercase; opacity: 0.9; }
 
 /* ========================================= */
-/* SYSTEM FLOATING DOCK NAVIGASI             */
+/* SYSTEM FLOATING DOCK NAVIGASI (ELEGANT)   */
 /* ========================================= */
-.footer-container { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 9999; padding: 0; margin: 0; pointer-events: none; }
-.bottom-nav { pointer-events: auto; display: flex; justify-content: space-around; width: 100%; max-width: 650px; padding: 15px 0 20px 0; background: var(--card-bg); border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 25px rgba(0,0,0,0.08); border: 1px solid var(--border-color); border-bottom: none; position: relative; z-index: 20; }
-.nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); cursor: pointer; transition: all 0.3s; padding: 10px; }
-.nav-item i { font-size: 1.6rem; }
-.nav-item:hover, .nav-item.active-icon { color: var(--gold-dark); transform: translateY(-3px); }
 
-.ticker-wrap { pointer-events: auto; width: 100vw; max-width: 100vw; background: var(--gold-gradient); border-top: 2px solid rgba(255, 255, 255, 0.4); padding: 12px 0; margin: 0; box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15); display: none; box-sizing: border-box; position: relative; z-index: 10; }
+/* Mengobati efek "Paku Beton" sebelumnya & memberi ruang scroll untuk Tabel Rekap */
+body { padding-bottom: 30px !important; }
+.main-card { margin-bottom: 120px !important; }
+
+.footer-container { 
+    position: fixed; bottom: 0; left: 0; width: 100%; 
+    display: flex; flex-direction: column; align-items: center; 
+    z-index: 9999; padding: 0; margin: 0; pointer-events: none; 
+}
+
+.bottom-nav { 
+    pointer-events: auto; display: flex; justify-content: space-around; 
+    width: 100%; max-width: 650px; padding: 15px 0 20px 0; 
+    background: var(--card-bg); /* Kembali pakai warna tema agar nge-blend */
+    border-top-left-radius: 30px; border-top-right-radius: 30px; 
+    box-shadow: 0 -5px 30px rgba(0,0,0,0.08); /* Bayangan super halus */
+    border: 1px solid var(--border-color); border-bottom: none; 
+    position: relative; z-index: 20; 
+}
+
+.nav-item { 
+    display: flex; flex-direction: column; align-items: center; 
+    color: var(--text-muted); cursor: pointer; padding: 10px; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+
+.nav-item i { font-size: 1.6rem; transition: transform 0.3s; }
+.nav-item:hover, .nav-item.active-icon { color: var(--gold-dark); transform: translateY(-6px) scale(1.1); }
+
+.ticker-wrap { 
+    pointer-events: auto; width: 100vw; max-width: 100vw; 
+    background: var(--gold-gradient); border-top: 2px solid rgba(255, 255, 255, 0.4); 
+    padding: 12px 0; margin: 0; box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15); 
+    display: none; box-sizing: border-box; position: relative; z-index: 10; 
+}
 .ticker-wrap.active-ticker { display: block; }
-.ticker-content { display: inline-block; white-space: nowrap; padding-left: 100vw; animation: marqueeAnimation 25s linear infinite; font-weight: 900; color: #ffffff; font-size: 1.8rem; letter-spacing: 3px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
+.ticker-content { 
+    display: inline-block; white-space: nowrap; padding-left: 100vw; 
+    animation: marqueeAnimation 25s linear infinite; font-weight: 900; 
+    color: #ffffff; font-size: 1.8rem; letter-spacing: 3px; 
+    text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); 
+}
 @keyframes marqueeAnimation { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
 /* RESPONSIVE LAYAR HP */
@@ -108,7 +142,7 @@ body.tv-mode { padding: 0; margin: 0; justify-content: center; overflow: hidden;
     .luxury-title { font-size: 1.4rem !important; }
 }
 @media (max-width: 680px) {
-    .main-card { padding: 40px 20px 30px 20px !important; }
-    .main-card-wide { padding: 40px 15px 30px 15px !important; }
+    .main-card { padding: 40px 20px 30px 20px !important; margin-bottom: 100px !important; }
+    .main-card-wide { padding: 40px 15px 30px 15px !important; margin-bottom: 100px !important; }
     .btn-logout { right: 70px; } 
 }
