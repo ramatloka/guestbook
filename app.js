@@ -68,7 +68,7 @@ window.onload = () => {
         return;
     }
 
-    document.getElementById('layoutMain').style.display = 'block';
+    document.getElementById('layoutMain').style.display = 'flex';
 
     if (IS_PUBLIC_MODE) {
         const style = document.createElement('style');
