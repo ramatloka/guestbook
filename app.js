@@ -658,3 +658,62 @@ function openMessageTemplate(guestName, qrString) {
         }
     }).then((result) => { if (result.isConfirmed) { Swal.fire({ title: 'Berhasil Disalin!', text: 'Tinggal Paste di WhatsApp.', icon: 'success', timer: 2000, showConfirmButton: false, customClass: { popup: 'luxury-popup', title: 'luxury-title' }}); } });
 }
+// =========================================================================
+// FITUR LIVE CAMERA SCANNER (NATIVE)
+// =========================================================================
+let liveHtml5Scanner = null;
+
+function startLiveCamera(readerId, mode) {
+    // Tutup scanner jika sudah ada yang menyala
+    if (liveHtml5Scanner) { stopLiveCamera(liveHtml5Scanner._elementId); }
+    
+    document.getElementById(readerId).style.display = "block";
+    document.getElementById('stopCamBtn_' + readerId).style.display = "block";
+    
+    liveHtml5Scanner = new Html5Qrcode(readerId);
+    let config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+    
+    liveHtml5Scanner.start(
+        { facingMode: "environment" }, // Paksa gunakan kamera belakang (HP)
+        config,
+        (decodedText) => {
+            // Ketika QR berhasil terbaca
+            stopLiveCamera(readerId); // Otomatis tutup kamera setelah dapat datanya
+            if (mode === 'checkin') {
+                processDataKehadiran(decodedText);
+            } else if (mode === 'souvenir') {
+                processDataSouvenir(decodedText);
+            }
+        },
+        (errorMessage) => {
+            // Proses scanning berjalan... (Abaikan error log ini agar tidak spam console)
+        }
+    ).catch(err => {
+        document.getElementById(readerId).style.display = "none";
+        document.getElementById('stopCamBtn_' + readerId).style.display = "none";
+        Swal.fire('Akses Ditolak', 'Tidak dapat mengakses kamera. Pastikan browser Anda memberikan izin (permission) kamera untuk situs ini.', 'error');
+    });
+}
+
+function stopLiveCamera(readerId) {
+    if (liveHtml5Scanner) {
+        liveHtml5Scanner.stop().then(() => {
+            liveHtml5Scanner.clear();
+            liveHtml5Scanner = null;
+            document.getElementById(readerId).style.display = "none";
+            document.getElementById('stopCamBtn_' + readerId).style.display = "none";
+        }).catch(err => { console.log(err); });
+    }
+}
+
+// Modifikasi fungsi ganti Tab agar kamera mati otomatis jika user pindah menu
+const originalActivateTab = activateTab;
+activateTab = function(tab) {
+    if(liveHtml5Scanner) { stopLiveCamera('reader'); stopLiveCamera('readerSouvenir'); }
+    originalActivateTab(tab);
+};
+const originalGoToHome = goToHome;
+goToHome = function() {
+    if(liveHtml5Scanner) { stopLiveCamera('reader'); stopLiveCamera('readerSouvenir'); }
+    originalGoToHome();
+};
