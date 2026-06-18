@@ -58,17 +58,27 @@
         <div class="stats-container"><div class="counter-box"><div class="counter-label">TERDAFTAR (SCAN)</div><div class="counter-number" id="totalHadirCounter">00</div></div><div class="counter-box"><div class="counter-label">TOTAL PENGUNJUNG</div><div class="counter-number" id="totalPengunjungCounter">00</div></div></div>
         <div class="divider-line">Arahkan kursor & Tembak QR</div>
         <input type="text" id="usbScannerInput" placeholder="/// KETIK ATAU SCAN DI SINI ///" style="text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 800; border: none; border-bottom: 2px solid var(--gold-light); border-radius: 0; background: transparent; padding: 10px; color: var(--gold-dark); width: 100%; margin-bottom: 10px; outline: none; letter-spacing: 1px;" autocomplete="off">
-        <button onclick="document.getElementById('qrCapture').click()" class="btn-submit"><i class="fas fa-camera"></i>  SNAP & SCAN (KAMERA HP)</button>
-        <input type="file" id="qrCapture" accept="image/*" capture="environment" style="display: none;" onchange="handleNativeCamera(event)">
-        <div id="reader" style="display:none;"></div><div class="branding-text">RAMATLOKA</div>
+       <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+           <button onclick="startLiveCamera('reader', 'checkin')" class="btn-submit" style="margin-top:0; flex: 2;"><i class="fas fa-video"></i> BUKA KAMERA LIVE</button>
+           <button onclick="document.getElementById('qrCapture').click()" class="btn-submit" style="margin-top:0; flex: 1; background: var(--bg-color); color: var(--gold-dark); border: 1px solid var(--gold-light); box-shadow: none;"><i class="fas fa-folder-open"></i> UPLOAD</button>
+        </div>
+        <button id="stopCamBtn_reader" onclick="stopLiveCamera('reader')" class="btn-submit" style="display:none; background:#c5221f; margin-top:0; margin-bottom:10px;"><i class="fas fa-stop-circle"></i> TUTUP KAMERA</button>
+        <input type="file" id="qrCapture" accept="image/*" style="display: none;" onchange="handleNativeCamera(event)">
+        <div id="reader" style="display:none; border-radius:12px; overflow:hidden; border:2px solid var(--gold-light); margin-bottom:15px;"></div>
+        <div class="branding-text">RAMATLOKA</div>
       </div>
 
       <div id="secSouvenir" class="section" style="position: relative;">
         <div class="tab-badge"><i class="fas fa-gift"></i> MODE <span class="dyn-souvenir-text">SOUVENIR</span></div>
         <div class="stats-container">
-          <div class="counter-box"><div class="counter-label"><span class="dyn-souvenir-text">SOUVENIR</span> KELUAR</div><div class="counter-number" id="totalSouvenirCounter" style="color: #1967d2;">00</div></div>
-          <div class="counter-box"><div class="counter-label">TAMU HADIR</div><div class="counter-number" id="totalHadirSouvCounter" style="color: #137333;">00</div></div>
-          <div class="counter-box"><div class="counter-label">BELUM AMBIL</div><div class="counter-number" id="sisaSouvCounter" style="color: #c5221f;">00</div></div>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+           <button onclick="startLiveCamera('readerSouvenir', 'souvenir')" class="btn-submit" style="margin-top:0; flex: 2; background: linear-gradient(to right, #4285f4, #1967d2);"><i class="fas fa-video"></i> BUKA KAMERA <span class="dyn-souvenir-text">SOUVENIR</span></button>
+           <button onclick="document.getElementById('qrCaptureSouvenir').click()" class="btn-submit" style="margin-top:0; flex: 1; background: #e8f0fe; color: #1967d2; border: 1px solid #4285f4; box-shadow: none;"><i class="fas fa-folder-open"></i> UPLOAD</button>
+        </div>
+        <button id="stopCamBtn_readerSouvenir" onclick="stopLiveCamera('readerSouvenir')" class="btn-submit" style="display:none; background:#c5221f; margin-top:0; margin-bottom:10px;"><i class="fas fa-stop-circle"></i> TUTUP KAMERA</button>
+        <input type="file" id="qrCaptureSouvenir" accept="image/*" style="display: none;" onchange="handleNativeCameraSouvenir(event)">
+        <div id="readerSouvenir" style="display:none; border-radius:12px; overflow:hidden; border:2px solid #1967d2; margin-bottom:15px;"></div>
+        <div class="branding-text">RAMATLOKA</div>
         </div>
         <div class="divider-line">Scan QR untuk Klaim <span class="dyn-souvenir-text">SOUVENIR</span></div>
         <input type="text" id="usbScannerSouvenirInput" placeholder="/// KETIK ATAU SCAN DI SINI ///" style="text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 800; border: none; border-bottom: 2px solid #1967d2; border-radius: 0; background: transparent; padding: 10px; color: #1967d2; width: 100%; margin-bottom: 10px; outline: none; letter-spacing: 1px;" autocomplete="off">
