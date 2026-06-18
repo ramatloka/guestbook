@@ -72,8 +72,14 @@ input:focus, select:focus { border-color: var(--gold-light); background: var(--c
 .acc-content { display: none; padding: 15px 20px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 20px; animation: fadeIn 0.3s ease; }
 .acc-content.active { display: block; }
 
-/* LAYOUT TV */
-body.tv-mode { padding: 0; margin: 0; justify-content: center; overflow: hidden; background: radial-gradient(circle at top, var(--card-bg) 0%, var(--bg-color) 100%); }
+/* ========================================= */
+/* LAYOUT TV VIEW (SAPAAN LAYAR BESAR)       */
+/* ========================================= */
+
+/* SATPAM TV MODE: Hancurkan Form Utama dan Navigasi Bawah saat di Layar TV! */
+body.tv-mode { padding: 0 !important; margin: 0 !important; justify-content: center; overflow: hidden; background: radial-gradient(circle at top, var(--card-bg) 0%, var(--bg-color) 100%); }
+body.tv-mode #layoutMain, body.tv-mode .footer-container { display: none !important; }
+
 .tv-poster-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 50; transition: opacity 1s ease-in-out; }
 .tv-header-area { position: absolute; top: 8vh; width: 100%; text-align: center; z-index: 10; }
 .tv-event-title { font-family: 'Playfair Display', serif; font-size: 4.5rem; color: var(--gold-dark); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
@@ -81,16 +87,20 @@ body.tv-mode { padding: 0; margin: 0; justify-content: center; overflow: hidden;
 .tv-greeting-text { font-family: 'Montserrat', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
 .tv-guest-name { font-family: 'Playfair Display', serif; font-size: 7.5rem; color: var(--gold-dark); font-weight: 900; line-height: 1.1; text-transform: uppercase; text-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); margin-top: 0; transition: all 0.5s ease;}
 .tv-badge-vip { display: inline-block; background: var(--gold-gradient); color: #fff; padding: 15px 40px; border-radius: 40px; font-weight: 900; font-size: 1.5rem; letter-spacing: 5px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); text-transform: uppercase; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { transform: scale(1); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); } 50% { transform: scale(1.05); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); } 100% { transform: scale(1); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); } }
-.tv-footer-area { position: absolute; bottom: 0; width: 100vw; z-index: 100; } 
+
+.tv-footer-area { position: absolute; bottom: 0; left: 0; width: 100vw; z-index: 100; } 
 .tv-branding { text-align: right; padding-right: 40px; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 8px; color: var(--gold-light); font-size: 1.2rem; text-transform: uppercase; opacity: 0.9; }
+
+/* MENGEMBALIKAN PITA EMAS TV YANG HILANG! */
+.tv-ticker-wrap { background: var(--gold-gradient); border-top: 3px solid rgba(255, 255, 255, 0.5); padding: 25px 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2); overflow: hidden; width: 100vw; }
+.tv-ticker-content { display: inline-block; white-space: nowrap; padding-left: 100vw; animation: marqueeAnimation 25s linear infinite; font-weight: 900; color: #ffffff; font-size: 2.5rem; letter-spacing: 4px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
+
 
 /* ========================================= */
 /* SYSTEM FLOATING DOCK NAVIGASI (ELEGANT)   */
 /* ========================================= */
 
-/* Mengobati efek "Paku Beton" sebelumnya & memberi ruang scroll untuk Tabel Rekap */
-body { padding-bottom: 30px !important; }
+body:not(.tv-mode) { padding-bottom: 30px !important; }
 .main-card { margin-bottom: 120px !important; }
 
 .footer-container { 
@@ -102,9 +112,9 @@ body { padding-bottom: 30px !important; }
 .bottom-nav { 
     pointer-events: auto; display: flex; justify-content: space-around; 
     width: 100%; max-width: 650px; padding: 15px 0 20px 0; 
-    background: var(--card-bg); /* Kembali pakai warna tema agar nge-blend */
+    background: var(--card-bg); 
     border-top-left-radius: 30px; border-top-right-radius: 30px; 
-    box-shadow: 0 -5px 30px rgba(0,0,0,0.08); /* Bayangan super halus */
+    box-shadow: 0 -5px 30px rgba(0,0,0,0.08); 
     border: 1px solid var(--border-color); border-bottom: none; 
     position: relative; z-index: 20; 
 }
@@ -131,6 +141,7 @@ body { padding-bottom: 30px !important; }
     color: #ffffff; font-size: 1.8rem; letter-spacing: 3px; 
     text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); 
 }
+
 @keyframes marqueeAnimation { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
 /* RESPONSIVE LAYAR HP */
