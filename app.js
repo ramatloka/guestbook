@@ -555,24 +555,29 @@ async function downloadAllQRZip() {
     Swal.fire({ title: 'Membuat Arsip ZIP...', text: 'Merakit ' + guestsToDownload.length + ' Tiket QR. Proses ini memakan waktu beberapa saat...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     let zip = new JSZip(); let imgFolder = zip.folder("Tiket_Tamu"); let activeThemeKey = document.getElementById('adminAppTheme') ? document.getElementById('adminAppTheme').value : "classic_gold"; let tColor = APP_THEMES[activeThemeKey] || APP_THEMES["classic_gold"]; let elName = document.getElementById('adminEventName'); let elDate = document.getElementById('adminEventDate'); let elLoc = document.getElementById('adminEventLocation'); let elTitle = document.getElementById('adminEventTitle'); let eventName = (elName && elName.value) ? elName.value : (elTitle && elTitle.value ? elTitle.value : "EVENT TICKET"); let eventDate = (elDate && elDate.value) ? elDate.value : ""; let eventLoc = (elLoc && elLoc.value) ? elLoc.value : "";
     let dateLocText = ""; if (eventDate && eventLoc) dateLocText = eventDate + "  |  " + eventLoc; else if (eventDate) dateLocText = eventDate; else if (eventLoc) dateLocText = eventLoc;
+    
     let fetchPromises = guestsToDownload.map(g => {
         return new Promise((resolve) => {
             let safeQr = g.qrString; let qrUrl = "https://quickchart.io/qr?size=500&margin=1&text=" + encodeURIComponent(safeQr); let guestName = g.primaryValue + (g.kategori === 'VIP' ? " (VIP)" : ""); let safeNameForFile = guestName.replace(/[^a-z0-9]/gi, '_').toLowerCase(); let fileName = 'Tiket_' + safeNameForFile + '.png';
-            fetch(qrUrl).then(response => response.blob()).then(blob => {
-                  const img = new Image(); const objectUrl = URL.createObjectURL(blob);
-                  img.onload = () => {
-                      const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = 500; canvas.height = 700; ctx.fillStyle = tColor.cardBg; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = tColor.border; ctx.lineWidth = 8; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40); ctx.strokeStyle = tColor.light; ctx.lineWidth = 2; ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60); ctx.fillStyle = tColor.dark; ctx.textAlign = "center"; let titleFontSize = 32; ctx.font = "bold " + titleFontSize + "px 'Playfair Display', serif";
-                      while (ctx.measureText(eventName.toUpperCase()).width > canvas.width - 80 && titleFontSize > 14) { titleFontSize -= 2; ctx.font = "bold " + titleFontSize + "px 'Playfair Display', serif"; }
-                      ctx.fillText(eventName.toUpperCase(), canvas.width / 2, 90); ctx.beginPath(); ctx.moveTo(canvas.width / 2 - 120, 110); ctx.lineTo(canvas.width / 2 + 120, 110); ctx.strokeStyle = tColor.light; ctx.lineWidth = 2; ctx.stroke();
-                      if(dateLocText) { ctx.fillStyle = tColor.textMuted; ctx.font = "bold 13px 'Montserrat', sans-serif"; ctx.fillText(dateLocText.toUpperCase(), canvas.width / 2, 140); }
-                      ctx.fillStyle = tColor.textMuted; ctx.font = "bold 16px 'Montserrat', sans-serif"; ctx.fillText("E - T I C K E T   P A S S", canvas.width / 2, 175); ctx.fillStyle = tColor.textMain; let nameFontSize = 28; ctx.font = "bold " + nameFontSize + "px 'Playfair Display', serif";
-                      while (ctx.measureText(guestName.toUpperCase()).width > canvas.width - 100 && nameFontSize > 14) { nameFontSize -= 2; ctx.font = "bold " + nameFontSize + "px 'Playfair Display', serif"; }
-                      ctx.fillText(guestName.toUpperCase(), canvas.width / 2, 220); ctx.fillStyle = tColor.bg; ctx.fillRect(115, 255, 270, 270); ctx.drawImage(img, 125, 265, 250, 250); ctx.fillStyle = tColor.textMuted; ctx.font = "600 14px 'Montserrat', sans-serif"; ctx.fillText("*Tunjukkan tiket ini kepada petugas di pintu masuk", canvas.width / 2, 580); ctx.fillStyle = tColor.light; ctx.font = "bold 18px 'Montserrat', sans-serif"; ctx.fillText("R A M A T L O K A", canvas.width / 2, 630);
-                      canvas.toBlob(function(finalBlob) { imgFolder.file(fileName, finalBlob); URL.revokeObjectURL(objectUrl); resolve(); }, "image/png");
-                  }; img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(); }; img.src = objectUrl;
-            }).catch(() => { resolve(); });
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = 500; canvas.height = 700; ctx.fillStyle = tColor.cardBg; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = tColor.border; ctx.lineWidth = 8; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40); ctx.strokeStyle = tColor.light; ctx.lineWidth = 2; ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60); ctx.fillStyle = tColor.dark; ctx.textAlign = "center"; let titleFontSize = 32; ctx.font = "bold " + titleFontSize + "px sans-serif";
+                    while (ctx.measureText(eventName.toUpperCase()).width > canvas.width - 80 && titleFontSize > 14) { titleFontSize -= 2; ctx.font = "bold " + titleFontSize + "px sans-serif"; }
+                    ctx.fillText(eventName.toUpperCase(), canvas.width / 2, 90); ctx.beginPath(); ctx.moveTo(canvas.width / 2 - 120, 110); ctx.lineTo(canvas.width / 2 + 120, 110); ctx.strokeStyle = tColor.light; ctx.lineWidth = 2; ctx.stroke();
+                    if(dateLocText) { ctx.fillStyle = tColor.textMuted; ctx.font = "bold 13px sans-serif"; ctx.fillText(dateLocText.toUpperCase(), canvas.width / 2, 140); }
+                    ctx.fillStyle = tColor.textMuted; ctx.font = "bold 16px sans-serif"; ctx.fillText("E - T I C K E T   P A S S", canvas.width / 2, 175); ctx.fillStyle = tColor.textMain; let nameFontSize = 28; ctx.font = "bold " + nameFontSize + "px sans-serif";
+                    while (ctx.measureText(guestName.toUpperCase()).width > canvas.width - 100 && nameFontSize > 14) { nameFontSize -= 2; ctx.font = "bold " + nameFontSize + "px sans-serif"; }
+                    ctx.fillText(guestName.toUpperCase(), canvas.width / 2, 220); ctx.fillStyle = tColor.bg; ctx.fillRect(115, 255, 270, 270); ctx.drawImage(img, 125, 265, 250, 250); ctx.fillStyle = tColor.textMuted; ctx.font = "600 14px sans-serif"; ctx.fillText("*Tunjukkan tiket ini kepada petugas di pintu masuk", canvas.width / 2, 580); ctx.fillStyle = tColor.light; ctx.font = "bold 18px sans-serif"; ctx.fillText("R A M A T L O K A", canvas.width / 2, 630);
+                    canvas.toBlob(function(finalBlob) { imgFolder.file(fileName, finalBlob); resolve(); }, "image/png");
+                } catch(e) { resolve(); } // Jika gagal, lewati tiket ini agar ZIP tidak macet
+            }; 
+            img.onerror = () => { resolve(); }; 
+            img.src = qrUrl;
         });
     });
+    
     await Promise.all(fetchPromises);
     zip.generateAsync({type:"blob"}).then(function(content) {
         let eventName = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "GUEST_BOOK"; let safeEventName = eventName.replace(/[^a-z0-9]/gi, '_'); saveAs(content, 'Tiket_Terpilih_' + safeEventName + '.zip'); Swal.fire({title: 'Berhasil', text: guestsToDownload.length + ' Tiket berhasil dirakit & diunduh!', icon: 'success', customClass: { popup: 'luxury-popup', confirmButton: 'btn-action-swal' }});
