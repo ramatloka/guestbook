@@ -251,11 +251,20 @@ function loadForm() {
         // TAMBAHAN: Set nilai dropdown admin dari database
         setVal('adminRequireLogin', data.requireLogin || "true");
 
-        // EKSEKUTOR BYPASS LOGIN
+       // ==========================================
+        // EKSEKUTOR BYPASS LOGIN (DENGAN BACKDOOR)
+        // ==========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceLogin = urlParams.get('force') === 'login';
+
         if (!IS_PUBLIC_MODE && currentUserRole === "" && data.requireLogin === "false") {
-            Swal.close(); // Tutup paksa popup login yang sedang loading
-            currentUserRole = "Scanner"; // Jadikan sebagai petugas scan
-            loginSuccess(); // Langsung masuk!
+            if (forceLogin) {
+                console.log("Backdoor aktif: Menahan popup login untuk Admin.");
+            } else {
+                Swal.close(); 
+                currentUserRole = "Scanner"; 
+                loginSuccess(); 
+            }
         }
 
         if (data.posterUrl && data.posterUrl.trim() !== "") { let preSt = document.getElementById('posterPreviewStatus'); if(preSt) preSt.style.display = 'block'; }
