@@ -816,27 +816,3 @@ if (typeof originalGoToHome === "undefined" && typeof goToHome === "function") {
         originalGoToHome();
     };
 }
-
-// Modifikasi fungsi ganti Tab agar kamera mati otomatis jika user pindah menu (Versi Selaras)
-const originalActivateTab = activateTab;
-activateTab = function(tab) {
-    closeCameraModal(); // Otomatis tutup modal dan matikan mesin kamera jika pindah tab
-    originalActivateTab(tab);
-};
-
-const originalGoToHome = goToHome;
-goToHome = function() {
-    closeCameraModal(); // Otomatis tutup modal dan matikan mesin kamera jika kembali ke home
-    originalGoToHome();
-};
-// Modifikasi fungsi ganti Tab agar kamera mati otomatis jika user pindah menu
-const originalActivateTab = activateTab;
-activateTab = function(tab) {
-    if(liveHtml5Scanner) { stopLiveCamera('reader'); stopLiveCamera('readerSouvenir'); }
-    originalActivateTab(tab);
-};
-const originalGoToHome = goToHome;
-goToHome = function() {
-    if(liveHtml5Scanner) { stopLiveCamera('reader'); stopLiveCamera('readerSouvenir'); }
-    originalGoToHome();
-};
