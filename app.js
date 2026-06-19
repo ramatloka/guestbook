@@ -741,7 +741,7 @@ function toggleCameraFacingMode() {
     } else {
         startScannerEngine();
     }
-} // <--- INI KURUNG YANG SEMPAT HILANG TADI
+} // 
 
 function startScannerEngine() {
     if (!html5QrCode) {
