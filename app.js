@@ -724,18 +724,23 @@ function toggleCameraFacingMode() {
         btnToggle.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menukar Kamera...';
     }
 
-    stopScannerEngine().then(() => {
+  // Cara aman langsung restart engine scanner
+    if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            startScannerEngine();
+            if(btnToggle) {
+                btnToggle.innerHTML = (currentFacingMode === "environment") 
+                    ? '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Depan' 
+                    : '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Belakang';
+            }
+        }).catch(err => {
+            console.error(err);
+            startScannerEngine();
+        });
+    } else {
         startScannerEngine();
-        if(btnToggle) {
-            btnToggle.innerHTML = (currentFacingMode === "environment") 
-                ? '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Depan' 
-                : '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Belakang';
-        }
-    }).catch(err => {
-        console.error("Gagal menukar kamera:", err);
-        startScannerEngine(); 
-    });
-}
+    }
 
 function startScannerEngine() {
     if (!html5QrCode) {
