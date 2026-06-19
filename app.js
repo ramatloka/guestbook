@@ -142,6 +142,9 @@ function showLoginPopup() {
     title: 'LOGIN SISTEM', html: '<input id="u" class="swal2-input" placeholder="Username" autocomplete="off"><input id="p" type="password" class="swal2-input" placeholder="Password">', confirmButtonText: 'Masuk', allowOutsideClick: false, allowEscapeKey: false, customClass: { popup: 'luxury-popup', confirmButton: 'btn-action-swal', title: 'luxury-title' },
     preConfirm: () => { let u = document.getElementById('u'); let p = document.getElementById('p'); return [(u ? u.value : ""), (p ? p.value : "")]; }
   }).then((r) => { 
+      // TAMBAHAN: Cegah error jika popup ditutup paksa oleh sistem bypass
+      if (!r.isConfirmed || !r.value) return; 
+
       let u = r.value[0]; let p = r.value[1];
       if(u === 'Admin55' && p === 'QRCode') { currentUserRole = "Admin"; loginSuccess(); } 
       else if(u === 'Scan' && p === '1234') { currentUserRole = "Scanner"; loginSuccess(); } 
@@ -245,6 +248,15 @@ function loadForm() {
         dynamicSouvenirLabel = data.souvenirLabel || "SOUVENIR"; setVal('adminSouvenirLabel', dynamicSouvenirLabel); updateSouvenirLabelDOM(dynamicSouvenirLabel);
         isSouvenirPerPax = (data.souvenirPerPax === "true"); setVal('adminSouvenirPerPax', data.souvenirPerPax || "false");
         setVal('adminMaxQuota', data.maxQuota); setVal('adminFormStatus', data.formStatus || "BUKA"); setVal('adminWaTemplate', data.waTemplate); 
+        // TAMBAHAN: Set nilai dropdown admin dari database
+        setVal('adminRequireLogin', data.requireLogin || "true");
+
+        // EKSEKUTOR BYPASS LOGIN
+        if (!IS_PUBLIC_MODE && currentUserRole === "" && data.requireLogin === "false") {
+            Swal.close(); // Tutup paksa popup login yang sedang loading
+            currentUserRole = "Scanner"; // Jadikan sebagai petugas scan
+            loginSuccess(); // Langsung masuk!
+        }
 
         if (data.posterUrl && data.posterUrl.trim() !== "") { let preSt = document.getElementById('posterPreviewStatus'); if(preSt) preSt.style.display = 'block'; }
 
@@ -530,7 +542,7 @@ function removeQuestion(idx) { currentQuestions.splice(idx, 1); renderAdminUI();
 
 function saveAdminSettingsData() { 
     let getVal = (id) => { let el = document.getElementById(id); return el ? el.value : ""; }; 
-    let conf = { eventTitle: getVal('adminEventTitle'), announcement: getVal('adminAnnouncement'), eventName: getVal('adminEventName'), eventDate: getVal('adminEventDate'), eventLocation: getVal('adminEventLocation'), prefix: getVal('adminPrefix'), suffix: getVal('adminSuffix'), appTheme: getVal('adminAppTheme'), detailUrl: getVal('adminDetailUrl'), soundSuccess: getVal('adminSoundSuccess'), soundError: getVal('adminSoundError'), souvenirLabel: getVal('adminSouvenirLabel'), maxQuota: getVal('adminMaxQuota'), formStatus: getVal('adminFormStatus'), posterUrl: getVal('adminPosterUrl'), waTemplate: getVal('adminWaTemplate') };
+    let conf = { eventTitle: getVal('adminEventTitle'), announcement: getVal('adminAnnouncement'), eventName: getVal('adminEventName'), eventDate: getVal('adminEventDate'), eventLocation: getVal('adminEventLocation'), prefix: getVal('adminPrefix'), suffix: getVal('adminSuffix'), appTheme: getVal('adminAppTheme'), detailUrl: getVal('adminDetailUrl'), soundSuccess: getVal('adminSoundSuccess'), soundError: getVal('adminSoundError'), souvenirLabel: getVal('adminSouvenirLabel'), maxQuota: getVal('adminMaxQuota'), formStatus: getVal('adminFormStatus'), posterUrl: getVal('adminPosterUrl'), waTemplate: getVal('adminWaTemplate'), requireLogin: getVal('adminRequireLogin') };
     let fileInput = document.getElementById('adminPosterUpload');
     if (fileInput && fileInput.files.length > 0) {
         Swal.fire({ title: 'Menyimpan & Mengupload...', text:'Mohon tunggu, sedang mengirim gambar ke Google Drive Anda...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); let file = fileInput.files[0]; let reader = new FileReader();
