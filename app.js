@@ -724,7 +724,7 @@ function toggleCameraFacingMode() {
         btnToggle.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menukar Kamera...';
     }
 
-  // Cara aman langsung restart engine scanner
+    // Cara aman langsung restart engine scanner
     if (html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().then(() => {
             html5QrCode.clear();
@@ -741,6 +741,7 @@ function toggleCameraFacingMode() {
     } else {
         startScannerEngine();
     }
+} // <--- INI KURUNG YANG SEMPAT HILANG TADI
 
 function startScannerEngine() {
     if (!html5QrCode) {
@@ -760,8 +761,6 @@ function startScannerEngine() {
                 let inputCheckin = document.getElementById('usbScannerInput');
                 if (inputCheckin) {
                     inputCheckin.value = decodedText;
-                    
-                    // Trigger fungsi pengolah data check-in asli bawaan Anda
                     if (typeof processDataKehadiran === "function") {
                         processDataKehadiran(decodedText);
                     }
@@ -770,8 +769,6 @@ function startScannerEngine() {
                 let inputSouvenir = document.getElementById('usbScannerSouvenirInput');
                 if (inputSouvenir) {
                     inputSouvenir.value = decodedText;
-                    
-                    // Trigger fungsi pengolah data souvenir asli bawaan Anda
                     if (typeof processDataSouvenir === "function") {
                         processDataSouvenir(decodedText);
                     }
@@ -799,6 +796,25 @@ function stopScannerEngine() {
             resolve();
         }
     });
+}
+
+// =========================================================================
+// MODIFIKASI FUNGSI PENGAMAN MENU (DIJAMIN TIDAK ADA DUPLIKAT ERROR)
+// =========================================================================
+if (typeof originalActivateTab === "undefined" && typeof activateTab === "function") {
+    const originalActivateTab = activateTab;
+    activateTab = function(tab) {
+        closeCameraModal(); 
+        originalActivateTab(tab);
+    };
+}
+
+if (typeof originalGoToHome === "undefined" && typeof goToHome === "function") {
+    const originalGoToHome = goToHome;
+    goToHome = function() {
+        closeCameraModal(); 
+        originalGoToHome();
+    };
 }
 
 // Modifikasi fungsi ganti Tab agar kamera mati otomatis jika user pindah menu (Versi Selaras)
