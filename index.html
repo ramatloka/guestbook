@@ -60,10 +60,10 @@
         <div class="divider-line">Arahkan kursor & Tembak QR</div>
         <input type="text" id="usbScannerInput" placeholder="/// KETIK ATAU SCAN DI SINI ///" style="text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 800; border: none; border-bottom: 2px solid var(--gold-light); border-radius: 0; background: transparent; padding: 10px; color: var(--gold-dark); width: 100%; margin-bottom: 10px; outline: none; letter-spacing: 1px;" autocomplete="off">
         
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-           <button type="button" onclick="startLiveCamera('reader', 'checkin')" class="btn-submit" style="margin-top:0; flex: 2;"><i class="fas fa-video"></i> BUKA KAMERA LIVE</button>
-           <button type="button" onclick="document.getElementById('qrCapture').click()" class="btn-submit" style="margin-top:0; flex: 1; background: var(--bg-color); color: var(--gold-dark); border: 1px solid var(--gold-light); box-shadow: none;"><i class="fas fa-folder-open"></i> UPLOAD</button>
-        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button type="button" onclick="openCameraModal('checkin')" class="btn-submit" style="margin-top:0; flex: 2;"><i class="fas fa-video"></i> BUKA KAMERA LIVE</button>
+        <button type="button" onclick="document.getElementById('qrCapture').click()" class="btn-submit" style="margin-top:0; flex: 1; background: var(--bg-color); color: var(--gold-dark); border: 1px solid var(--gold-light); box-shadow: none;"><i class="fas fa-folder-open"></i> UPLOAD</button>
+    </div>
         <button type="button" id="stopCamBtn_reader" onclick="stopLiveCamera('reader')" class="btn-submit" style="display:none; background:#c5221f; margin-top:0; margin-bottom:10px;"><i class="fas fa-stop-circle"></i> TUTUP KAMERA</button>
         <input type="file" id="qrCapture" accept="image/*" style="display: none;" onchange="handleNativeCamera(event)">
         <div id="reader" style="display:none; border-radius:12px; overflow:hidden; border:2px solid var(--gold-light); margin-bottom:15px;"></div>
@@ -80,10 +80,10 @@
         <div class="divider-line">Scan QR untuk Klaim <span class="dyn-souvenir-text">SOUVENIR</span></div>
         <input type="text" id="usbScannerSouvenirInput" placeholder="/// KETIK ATAU SCAN DI SINI ///" style="text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 800; border: none; border-bottom: 2px solid #1967d2; border-radius: 0; background: transparent; padding: 10px; color: #1967d2; width: 100%; margin-bottom: 10px; outline: none; letter-spacing: 1px;" autocomplete="off">
         
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-           <button type="button" onclick="startLiveCamera('readerSouvenir', 'souvenir')" class="btn-submit" style="margin-top:0; flex: 2; background: linear-gradient(to right, #4285f4, #1967d2); padding: 15px 5px; font-size: 0.8rem;"><i class="fas fa-video"></i> BUKA KAMERA</button>
-           <button type="button" onclick="document.getElementById('qrCaptureSouvenir').click()" class="btn-submit" style="margin-top:0; flex: 1; background: #e8f0fe; color: #1967d2; border: 1px solid #4285f4; box-shadow: none; padding: 15px 5px; font-size: 0.8rem;"><i class="fas fa-folder-open"></i> UPLOAD</button>
-        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button type="button" onclick="openCameraModal('souvenir')" class="btn-submit" style="margin-top:0; flex: 2; background: linear-gradient(to right, #4285f4, #1967d2); padding: 15px 5px; font-size: 0.8rem;"><i class="fas fa-video"></i> BUKA KAMERA LIVE</button>
+        <button type="button" onclick="document.getElementById('qrCaptureSouvenir').click()" class="btn-submit" style="margin-top:0; flex: 1; background: #e8f0fe; color: #1967d2; border: 1px solid #4285f4; box-shadow: none; padding: 15px 5px; font-size: 0.8rem;"><i class="fas fa-folder-open"></i> UPLOAD</button>
+    </div>
         <button type="button" id="stopCamBtn_readerSouvenir" onclick="stopLiveCamera('readerSouvenir')" class="btn-submit" style="display:none; background:#c5221f; margin-top:0; margin-bottom:10px;"><i class="fas fa-stop-circle"></i> TUTUP KAMERA</button>
         <input type="file" id="qrCaptureSouvenir" accept="image/*" style="display: none;" onchange="handleNativeCameraSouvenir(event)">
         <div id="readerSouvenir" style="display:none; border-radius:12px; overflow:hidden; border:2px solid #1967d2; margin-bottom:15px;"></div>
@@ -229,5 +229,25 @@
 
   <script src="app.js"></script>
 
+<div id="cameraModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px);">
+    <div style="background: var(--card-bg, #ffffff); padding: 20px; border-radius: 16px; width: 90%; max-width: 500px; text-align: center; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        
+        <h3 style="margin-top: 0; font-family: 'Montserrat', sans-serif; color: var(--text-main, #333); font-weight: 800; letter-spacing: 1px;">
+            <i class="fas fa-qrcode"></i> SCAN TIKET
+        </h3>
+        
+        <button id="btnToggleCamera" onclick="toggleCameraFacingMode()" style="margin-bottom: 15px; padding: 10px 15px; border: 2px solid var(--border, #e2e8f0); border-radius: 8px; background: var(--bg, #f7fafc); color: var(--text-main, #333); cursor: pointer; font-family: 'Inter', sans-serif; font-weight: bold; width: 100%; transition: all 0.3s ease;">
+            <i class="fas fa-camera-rotate"></i> Gunakan Kamera Depan
+        </button>
+
+        <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; border: 3px solid var(--light, #b39343); background: #000; min-height: 250px;"></div>
+
+        <button onclick="closeCameraModal()" style="margin-top: 20px; padding: 12px 20px; border: none; border-radius: 8px; background: #e53e3e; color: white; font-weight: bold; cursor: pointer; width: 100%; font-family: 'Inter', sans-serif; font-size: 16px; box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);">
+            <i class="fas fa-times-circle"></i> BATAL / TUTUP KAMERA
+        </button>
+
+    </div>
+</div>
+  
 </body>
 </html>
