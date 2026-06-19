@@ -687,54 +687,127 @@ function openMessageTemplate(guestName, qrString) {
         }
     }).then((result) => { if (result.isConfirmed) { Swal.fire({ title: 'Berhasil Disalin!', text: 'Tinggal Paste di WhatsApp.', icon: 'success', timer: 2000, showConfirmButton: false, customClass: { popup: 'luxury-popup', title: 'luxury-title' }}); } });
 }
-// =========================================================================
-// FITUR LIVE CAMERA SCANNER (NATIVE)
-// =========================================================================
-let liveHtml5Scanner = null;
+// =========================================
+// SISTEM KAMERA POPUP & TOGGLE (FRONT/REAR)
+// =========================================
+let currentFacingMode = "environment"; // Default: Kamera Belakang
+let html5QrCode; // Variabel penampung instance scanner
+let currentScanTarget = "checkin"; // Menampung target aktif: 'checkin' atau 'souvenir'
 
-function startLiveCamera(readerId, mode) {
-    // Tutup scanner jika sudah ada yang menyala
-    if (liveHtml5Scanner) { stopLiveCamera(liveHtml5Scanner._elementId); }
+function openCameraModal(target) {
+    currentScanTarget = target; // Kunci target halaman saat ini ('checkin' atau 'souvenir')
     
-    document.getElementById(readerId).style.display = "block";
-    document.getElementById('stopCamBtn_' + readerId).style.display = "block";
+    let overlay = document.getElementById('cameraModalOverlay');
+    if (overlay) overlay.style.display = 'flex';
     
-    liveHtml5Scanner = new Html5Qrcode(readerId);
-    let config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+    let btnToggle = document.getElementById('btnToggleCamera');
+    if(btnToggle) {
+        btnToggle.innerHTML = (currentFacingMode === "environment") 
+            ? '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Depan' 
+            : '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Belakang';
+    }
     
-    liveHtml5Scanner.start(
-        { facingMode: "environment" }, // Paksa gunakan kamera belakang (HP)
-        config,
-        (decodedText) => {
-            // Ketika QR berhasil terbaca
-            stopLiveCamera(readerId); // Otomatis tutup kamera setelah dapat datanya
-            if (mode === 'checkin') {
-                processDataKehadiran(decodedText);
-            } else if (mode === 'souvenir') {
-                processDataSouvenir(decodedText);
-            }
-        },
-        (errorMessage) => {
-            // Proses scanning berjalan... (Abaikan error log ini agar tidak spam console)
+    startScannerEngine();
+}
+
+function closeCameraModal() {
+    let overlay = document.getElementById('cameraModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+    stopScannerEngine();
+}
+
+function toggleCameraFacingMode() {
+    currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+    
+    let btnToggle = document.getElementById('btnToggleCamera');
+    if(btnToggle) {
+        btnToggle.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menukar Kamera...';
+    }
+
+    stopScannerEngine().then(() => {
+        startScannerEngine();
+        if(btnToggle) {
+            btnToggle.innerHTML = (currentFacingMode === "environment") 
+                ? '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Depan' 
+                : '<i class="fas fa-camera-rotate"></i> Gunakan Kamera Belakang';
         }
-    ).catch(err => {
-        document.getElementById(readerId).style.display = "none";
-        document.getElementById('stopCamBtn_' + readerId).style.display = "none";
-        Swal.fire('Akses Ditolak', 'Tidak dapat mengakses kamera. Pastikan browser Anda memberikan izin (permission) kamera untuk situs ini.', 'error');
+    }).catch(err => {
+        console.error("Gagal menukar kamera:", err);
+        startScannerEngine(); 
     });
 }
 
-function stopLiveCamera(readerId) {
-    if (liveHtml5Scanner) {
-        liveHtml5Scanner.stop().then(() => {
-            liveHtml5Scanner.clear();
-            liveHtml5Scanner = null;
-            document.getElementById(readerId).style.display = "none";
-            document.getElementById('stopCamBtn_' + readerId).style.display = "none";
-        }).catch(err => { console.log(err); });
+function startScannerEngine() {
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
     }
+    
+    const config = { fps: 15, qrbox: { width: 250, height: 250 } };
+    
+    html5QrCode.start(
+        { facingMode: currentFacingMode },
+        config,
+        (decodedText, decodedResult) => {
+            closeCameraModal(); // Tutup popup otomatis
+            
+            // JALUR DISTRIBUSI HASIL SCAN OTOMATIS
+            if (currentScanTarget === "checkin") {
+                let inputCheckin = document.getElementById('usbScannerInput');
+                if (inputCheckin) {
+                    inputCheckin.value = decodedText;
+                    
+                    // Trigger fungsi pengolah data check-in asli bawaan Anda
+                    if (typeof processDataKehadiran === "function") {
+                        processDataKehadiran(decodedText);
+                    }
+                }
+            } else if (currentScanTarget === "souvenir") {
+                let inputSouvenir = document.getElementById('usbScannerSouvenirInput');
+                if (inputSouvenir) {
+                    inputSouvenir.value = decodedText;
+                    
+                    // Trigger fungsi pengolah data souvenir asli bawaan Anda
+                    if (typeof processDataSouvenir === "function") {
+                        processDataSouvenir(decodedText);
+                    }
+                }
+            }
+        },
+        (errorMessage) => { }
+    ).catch((err) => {
+        console.error("Kamera gagal dimulai:", err);
+        Swal.fire('Akses Ditolak', 'Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan di browser.', 'error');
+    });
 }
 
+function stopScannerEngine() {
+    return new Promise((resolve) => {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                resolve();
+            }).catch((err) => {
+                console.error("Gagal stop scanner:", err);
+                resolve();
+            });
+        } else {
+            resolve();
+        }
+    });
+}
+
+// Modifikasi fungsi ganti Tab agar kamera mati otomatis jika user pindah menu (Versi Selaras)
+const originalActivateTab = activateTab;
+activateTab = function(tab) {
+    closeCameraModal(); // Otomatis tutup modal dan matikan mesin kamera jika pindah tab
+    originalActivateTab(tab);
+};
+
+const originalGoToHome = goToHome;
+goToHome = function() {
+    closeCameraModal(); // Otomatis tutup modal dan matikan mesin kamera jika kembali ke home
+    originalGoToHome();
+};
 // Modifikasi fungsi ganti Tab agar kamera mati otomatis jika user pindah menu
 const originalActivateTab = activateTab;
 activateTab = function(tab) {
