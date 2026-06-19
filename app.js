@@ -693,7 +693,7 @@ function openMessageTemplate(guestName, qrString) {
 let currentFacingMode = "environment"; 
 let html5QrCode = null; 
 let currentScanTarget = "checkin"; 
-let isCameraTransitioning = false; // Kunci pengaman anti-bentrok loading
+let isCameraTransitioning = false; 
 
 function openCameraModal(target) {
     if (isCameraTransitioning) return;
@@ -719,7 +719,7 @@ function closeCameraModal() {
 }
 
 function toggleCameraFacingMode() {
-    if (isCameraTransitioning) return; // Kunci tombol agar tidak di-spam saat loading
+    if (isCameraTransitioning) return; 
     isCameraTransitioning = true;
     
     currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
@@ -730,8 +730,8 @@ function toggleCameraFacingMode() {
     }
 
     stopScannerEngine().then(() => {
-        setTimeout(() => { // Beri jeda hardware 300ms untuk bernapas
-            html5QrCode = new Html5Qrcode("reader"); 
+        setTimeout(() => { 
+            html5QrCode = new Html5Qrcode("scannerModalReader"); // <--- SUDAH DIGANTI DI SINI
             startScannerEngine();
             if(btnToggle) {
                 btnToggle.innerHTML = (currentFacingMode === "environment") 
@@ -745,7 +745,7 @@ function toggleCameraFacingMode() {
 function startScannerEngine() {
     isCameraTransitioning = true;
     if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode = new Html5Qrcode("scannerModalReader"); // <--- DAN DI SINI
     }
     
     const config = { fps: 15, qrbox: { width: 250, height: 250 } };
@@ -771,18 +771,17 @@ function startScannerEngine() {
         },
         (errorMessage) => { }
     ).then(() => {
-        isCameraTransitioning = false; // Sukses menyala, buka kunci
+        isCameraTransitioning = false; 
     }).catch((err) => {
         console.warn("Kamera gagal di mode:", currentFacingMode);
         
-        // AUTO-FALLBACK: Jika mode belakang gagal (karena pakai Laptop), otomatis putar ke depan!
         if (currentFacingMode === "environment") {
             currentFacingMode = "user";
-            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode = new Html5Qrcode("scannerModalReader"); // <--- DAN DI SINI
             setTimeout(() => { startScannerEngine(); }, 300);
         } else {
             isCameraTransitioning = false;
-            Swal.fire('Akses Ditolak', 'Kamera tidak ditemukan atau izin belum diberikan di browser Anda.', 'error');
+            Swal.fire('Akses Ditolak', 'Kamera tidak ditemukan atau terblokir.', 'error');
             closeCameraModal();
         }
     });
@@ -792,7 +791,6 @@ function stopScannerEngine() {
     return new Promise((resolve) => {
         if (html5QrCode) {
             try {
-                // Pastikan hanya stop saat kamera benar-benar berstatus SCANNING (State 2)
                 if (html5QrCode.getState() === 2) {
                     html5QrCode.stop().then(() => {
                         html5QrCode.clear();
