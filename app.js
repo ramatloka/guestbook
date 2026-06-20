@@ -497,13 +497,106 @@ function exportCSV() {
 
 function exportPDF() {
     if(filteredGuestData.length === 0) { Swal.fire('Kosong', 'Tidak ada data untuk dicetak.', 'info'); return; }
-    let tColor = APP_THEMES[document.getElementById('adminAppTheme').value] || APP_THEMES["classic_gold"]; let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU"; let headers = currentQuestions.map(q => q.label);
-    let tableHtml = '<table style="width:100%; border-collapse: collapse; font-family:\'Montserrat\', sans-serif; font-size:10px;"><thead><tr style="background-color: ' + tColor.cardBg + '; color: ' + tColor.dark + '; text-align: left;">';
-    headers.forEach(h => tableHtml += '<th style="padding: 8px; border-bottom: 2px solid ' + tColor.dark + ';">' + h + '</th>');
-    tableHtml += '<th style="padding: 8px; border-bottom: 2px solid ' + tColor.dark + ';">Kategori</th><th style="padding: 8px; border-bottom: 2px solid ' + tColor.dark + ';">Status</th></tr></thead><tbody>';
-    filteredGuestData.forEach(g => { let qrObj = g.fullData || {}; tableHtml += "<tr>"; currentQuestions.forEach(q => tableHtml += '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' + (qrObj[q.id] || "") + '</td>'); tableHtml += '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' + g.kategori + '</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">' + g.status + '</td></tr>'; });
-    tableHtml += '</tbody></table>'; const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>' + eventTitle + '</title><style>@page{size: A4 landscape; margin: 10mm;}</style></head><body><h1 style="font-family:\'Playfair Display\', serif; text-align:center; margin-bottom:5px;">' + eventTitle + '</h1><p style="text-align:center; font-family:sans-serif; color:#666;">Data Rekapitulasi Tamu</p>' + tableHtml + '</body></html>'); printWindow.document.close(); setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
-}
+    let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
+    let eventDate = document.getElementById('adminEventDate')?.value || "4 Juli 2026";
+
+    // 2. Kalkulasi Matematika Ringkasan Data
+    let totalHadir = 0;
+    let totalSouvenir = 0;
+    let totalVIP = 0;
+    let totalReguler = 0;
+
+    filteredGuestData.forEach(g => {
+        if (g.status === 'Hadir') {
+            totalHadir++;
+            if (g.kategori === 'VIP') totalVIP++;
+            else totalReguler++;
+        }
+        if (g.souvenir === 'Sudah Ambil') {
+            totalSouvenir++;
+        }
+    });
+
+    // 3. Bangun struktur tabel baris tamu secara dinamis
+    let tableRowsHtml = '';
+    filteredGuestData.forEach((g, idx) => {
+        tableRowsHtml += `
+            <tr>
+                <td style="text-align:center; padding:8px; border:1px solid #ddd;">${idx + 1}</td>
+                <td style="padding:8px; border:1px solid #ddd;">${g.g && g.g.fullName ? g.g.fullName : '-'}</td>
+                <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.kategori || 'Reguler'}</td>
+                <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.status || 'Belum Hadir'}</td>
+                <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.souvenir || 'Belum Ambil'}</td>
+            </tr>
+        `;
+    });
+
+    // 4. Buka dokumen print secara aman di window baru tanpa diblokir pop-up
+    const printWindow = window.open('', '_blank');
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Rekap_TAMOO_${eventTitle.replace(/\s+/g, '_')}</title>
+            <style>
+                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; }
+                .header-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+                .sub-title { font-size: 13px; color: #555; margin-bottom: 20px; }
+                
+                .summary-container { background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; flex-wrap: wrap; }
+                .summary-box { flex: 1; min-width: 200px; margin-bottom: 10px; }
+                .summary-box p { margin: 5px 0; font-size: 14px; }
+                .summary-box strong { color: #2ecc71; }
+                
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th { background-color: #2ecc71; color: white; padding: 10px; font-size: 13px; text-transform: uppercase; border: 1px solid #2ecc71; }
+                @media print {
+                    button { display: none; }
+                    body { padding: 0; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header-title">LAPORAN REKAPITULASI DATA TAMU (TAMOO)</div>
+            <div class="sub-title">
+                <strong>Nama Event:</strong> ${eventTitle} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Tanggal Pelaksanaan:</strong> ${eventDate}
+            </div>
+
+            <div class="summary-container">
+                <div class="summary-box">
+                    <p>Total Kehadiran: <strong>${totalHadir} Orang</strong></p>
+                    <p>Total Ambil Souvenir: <strong>${totalSouvenir} Pcs</strong></p>
+                </div>
+                <div class="summary-box">
+                    <p>Total Tamu VIP Hadir: <strong>${totalVIP} Orang</strong></p>
+                    <p>Total Tamu Reguler Hadir: <strong>${totalReguler} Orang</strong></p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th>Nama Lengkap Tamu</th>
+                        <th style="width: 15%;">Kategori</th>
+                        <th style="width: 20%;">Status Kehadiran</th>
+                        <th style="width: 20%;">Status Souvenir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRowsHtml}
+                </tbody>
+            </table>
+
+            <script>
+                window.onload = function() {
+                    window.print();
+                };
+            </script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
 
 function toggleVipStatus(name) { Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); google.script.run.withSuccessHandler(() => { Swal.close(); loadRekapData(); }).toggleGuestKategori(name); }
 
