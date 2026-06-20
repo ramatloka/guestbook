@@ -565,7 +565,7 @@ function exportCSV() {
 
 function exportPDF() {
     if (filteredGuestData.length === 0) { 
-        Swal.fire('Kosong', 'Tidak ada data untuk diexport.', 'info'); 
+        Swal.fire('Kosong', 'Tidak ada data untuk dicetak.', 'info'); 
         return; 
     }
 
@@ -573,19 +573,23 @@ function exportPDF() {
     let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
     let eventDate = document.getElementById('adminEventDate') ? document.getElementById('adminEventDate').value : "4 Juli 2026";
 
-    // 2. Kalkulasi Matematika Ringkasan Data Kehadiran & Souvenir
+    // 2. Kalkulasi Matematika Ringkasan Data Kehadiran & Souvenir (Termasuk Belum Hadir)
     let totalHadir = 0;
     let totalSouvenir = 0;
     let totalVIP = 0;
     let totalReguler = 0;
+    let totalBelumHadir = 0;
 
     filteredGuestData.forEach(g => {
-        if (g.status === 'Hadir') {
+        if (g.status === 'Hadir' || g.status === 'Sudah Hadir') {
             totalHadir++;
             if (g.kategori === 'VIP') totalVIP++;
             else totalReguler++;
+        } else {
+            totalBelumHadir++; // Menghitung tamu yang belum melakukan scan check-in
         }
-        if (g.souvenir === 'Sudah Ambil') {
+        
+        if (g.souvenir === 'Sudah Ambil' || g.souvenir === 'Sudah') {
             totalSouvenir++;
         }
     });
@@ -621,6 +625,7 @@ function exportPDF() {
                 .summary-box { flex: 1; min-width: 200px; }
                 .summary-box p { margin: 6px 0; font-size: 14px; color: #444; }
                 .summary-box strong { color: #28a745; font-size: 15px; }
+                .summary-box .text-danger { color: #c5221f; font-size: 15px; }
                 
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
                 th { background-color: #28a745; color: white; padding: 10px; font-size: 12px; text-transform: uppercase; border: 1px solid #28a745; }
@@ -639,6 +644,7 @@ function exportPDF() {
             <div class="summary-container">
                 <div class="summary-box">
                     <p>Total Kehadiran: <strong>${totalHadir} Orang</strong></p>
+                    <p>Total Belum Hadir: <span class="text-danger"><strong>${totalBelumHadir} Orang</strong></span></p>
                     <p>Total Ambil Souvenir: <strong>${totalSouvenir} Pcs</strong></p>
                 </div>
                 <div class="summary-box">
