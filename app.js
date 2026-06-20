@@ -573,7 +573,7 @@ function exportPDF() {
     let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
     let eventDate = document.getElementById('adminEventDate') ? document.getElementById('adminEventDate').value : "4 Juli 2026";
 
-    // 2. Kalkulasi Matematika Ringkasan Data Kehadiran & Souvenir (Termasuk Belum Hadir)
+    // 2. Kalkulasi Matematika Ringkasan Data (Termasuk Belum Hadir)
     let totalHadir = 0;
     let totalSouvenir = 0;
     let totalVIP = 0;
@@ -586,7 +586,7 @@ function exportPDF() {
             if (g.kategori === 'VIP') totalVIP++;
             else totalReguler++;
         } else {
-            totalBelumHadir++; // Menghitung tamu yang belum melakukan scan check-in
+            totalBelumHadir++;
         }
         
         if (g.souvenir === 'Sudah Ambil' || g.souvenir === 'Sudah') {
@@ -616,27 +616,35 @@ function exportPDF() {
         <head>
             <title>Rekap_TAMOO_${eventTitle.replace(/\s+/g, '_')}</title>
             <style>
-                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; line-height: 1.4; }
-                .header-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; color: #111; }
-                .sub-title { font-size: 13px; color: #555; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; line-height: 1.4; text-align: center; }
                 
-                /* Box Ringkasan Keterangan Total Tamu */
-                .summary-container { background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; }
-                .summary-box { flex: 1; min-width: 200px; }
-                .summary-box p { margin: 6px 0; font-size: 14px; color: #444; }
-                .summary-box strong { color: #28a745; font-size: 15px; }
-                .summary-box .text-danger { color: #c5221f; font-size: 15px; }
+                /* Branding TAMOO - Warna Emas */
+                .app-branding { font-size: 15px; font-weight: bold; color: #846924; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
                 
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th { background-color: #28a745; color: white; padding: 10px; font-size: 12px; text-transform: uppercase; border: 1px solid #28a745; }
-                td { font-size: 12px; }
-                @media print {
-                    body { padding: 0; }
-                }
+                /* Header Utama */
+                .header-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; color: #111; }
+                .sub-title { font-size: 13px; color: #555; margin-bottom: 25px; border-bottom: 1px solid #e0e6ed; padding-bottom: 15px; display: inline-block; width: 80%; }
+                
+                /* Summary Container - Background Krem Keemasan */
+                .summary-container { background-color: #fdfaf3; border: 1px solid #f0e6d2; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: inline-block; text-align: left; width: 85%; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+                .summary-box { display: inline-block; vertical-align: top; width: 45%; margin-right: 2%; }
+                .summary-box p { margin: 6px 0; font-size: 13px; color: #444; }
+                .summary-box strong { color: #846924; font-size: 14px; } /* Angka sukses warna Emas */
+                .summary-box .text-danger { color: #c5221f; font-size: 14px; } /* Angka belum hadir warna Merah */
+                
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+                th { background-color: #846924; color: white; padding: 10px; font-size: 12px; text-transform: uppercase; border: 1px solid #846924; }
+                td { padding: 8px; border: 1px solid #ddd; font-size: 11px; }
+                
+                /* Footer RAMATLOKA */
+                .footer-brand { position: fixed; bottom: 20px; right: 20px; font-size: 11px; color: #888; font-style: italic; font-weight: bold; letter-spacing: 1px; }
+                
+                @media print { body { padding: 0; } }
             </style>
         </head>
         <body>
-            <div class="header-title">LAPORAN REKAPITULASI DATA TAMU (TAMOO)</div>
+            <div class="app-branding">TAMOO</div>
+            <div class="header-title">LAPORAN REKAPITULASI DATA TAMU</div>
             <div class="sub-title">
                 <strong>Nama Event:</strong> ${eventTitle} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Tanggal Pelaksanaan:</strong> ${eventDate}
             </div>
@@ -656,17 +664,19 @@ function exportPDF() {
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
+                        <th style="width: 5%; text-align:center;">No</th>
                         <th>Nama Lengkap Tamu</th>
-                        <th style="width: 15%;">Kategori</th>
-                        <th style="width: 20%;">Status Kehadiran</th>
-                        <th style="width: 20%;">Status Souvenir</th>
+                        <th style="width: 15%; text-align:center;">Kategori</th>
+                        <th style="width: 20%; text-align:center;">Status Kehadiran</th>
+                        <th style="width: 20%; text-align:center;">Status Souvenir</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${tableRowsHtml}
                 </tbody>
             </table>
+
+            <div class="footer-brand">Powered by RAMATLOKA</div>
 
             <script>
                 window.onload = function() {
