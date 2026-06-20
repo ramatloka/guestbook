@@ -496,11 +496,16 @@ function exportCSV() {
 }
 
 function exportPDF() {
-    if(filteredGuestData.length === 0) { Swal.fire('Kosong', 'Tidak ada data untuk dicetak.', 'info'); return; }
-    let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
-    let eventDate = document.getElementById('adminEventDate')?.value || "4 Juli 2026";
+    if (filteredGuestData.length === 0) { 
+        Swal.fire('Kosong', 'Tidak ada data untuk diexport.', 'info'); 
+        return; 
+    }
 
-    // 2. Kalkulasi Matematika Ringkasan Data
+    // 1. Ambil data Event Title dan Event Date dari DOM Setup secara aman
+    let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
+    let eventDate = document.getElementById('adminEventDate') ? document.getElementById('adminEventDate').value : "4 Juli 2026";
+
+    // 2. Kalkulasi Matematika Ringkasan Data Kehadiran & Souvenir
     let totalHadir = 0;
     let totalSouvenir = 0;
     let totalVIP = 0;
@@ -517,13 +522,13 @@ function exportPDF() {
         }
     });
 
-    // 3. Bangun struktur tabel baris tamu secara dinamis
+    // 3. Bangun struktur baris tabel data tamu secara dinamis
     let tableRowsHtml = '';
     filteredGuestData.forEach((g, idx) => {
         tableRowsHtml += `
             <tr>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${idx + 1}</td>
-                <td style="padding:8px; border:1px solid #ddd;">${g.g && g.g.fullName ? g.g.fullName : '-'}</td>
+                <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">${g.primaryValue || '-'}</td>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.kategori || 'Reguler'}</td>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.status || 'Belum Hadir'}</td>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.souvenir || 'Belum Ambil'}</td>
@@ -531,7 +536,7 @@ function exportPDF() {
         `;
     });
 
-    // 4. Buka dokumen print secara aman di window baru tanpa diblokir pop-up
+    // 4. Buka dokumen print secara aman tanpa diblokir oleh pop-up browser
     const printWindow = window.open('', '_blank');
     
     printWindow.document.write(`
@@ -539,19 +544,20 @@ function exportPDF() {
         <head>
             <title>Rekap_TAMOO_${eventTitle.replace(/\s+/g, '_')}</title>
             <style>
-                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; }
-                .header-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-                .sub-title { font-size: 13px; color: #555; margin-bottom: 20px; }
+                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; line-height: 1.4; }
+                .header-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; color: #111; }
+                .sub-title { font-size: 13px; color: #555; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 10px; }
                 
-                .summary-container { background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; flex-wrap: wrap; }
-                .summary-box { flex: 1; min-width: 200px; margin-bottom: 10px; }
-                .summary-box p { margin: 5px 0; font-size: 14px; }
-                .summary-box strong { color: #2ecc71; }
+                /* Box Ringkasan Keterangan Total Tamu */
+                .summary-container { background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; }
+                .summary-box { flex: 1; min-width: 200px; }
+                .summary-box p { margin: 6px 0; font-size: 14px; color: #444; }
+                .summary-box strong { color: #28a745; font-size: 15px; }
                 
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th { background-color: #2ecc71; color: white; padding: 10px; font-size: 13px; text-transform: uppercase; border: 1px solid #2ecc71; }
+                th { background-color: #28a745; color: white; padding: 10px; font-size: 12px; text-transform: uppercase; border: 1px solid #28a745; }
+                td { font-size: 12px; }
                 @media print {
-                    button { display: none; }
                     body { padding: 0; }
                 }
             </style>
