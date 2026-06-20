@@ -597,7 +597,7 @@ function exportPDF() {
         </html>
     `);
     printWindow.document.close();
-
+}
 function toggleVipStatus(name) { Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); google.script.run.withSuccessHandler(() => { Swal.close(); loadRekapData(); }).toggleGuestKategori(name); }
 
 function openAddGuestModal() {
