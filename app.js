@@ -489,10 +489,78 @@ function renderRekapRows() {
 function changePage(direction) { currentPage += direction; renderRekapRows(); }
 
 function exportCSV() {
-    if(filteredGuestData.length === 0) { Swal.fire('Kosong', 'Tidak ada data untuk diexport.', 'info'); return; }
-    let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "Laporan Tamu"; let headers = currentQuestions.map(q => q.label); headers.push("Kategori", "Status Kehadiran", "Status " + dynamicSouvenirLabel); let csvContent = "data:text/csv;charset=utf-8,\ufeff"; csvContent += "EVENT: " + eventTitle + "\n\n"; csvContent += headers.join(",") + "\n";
-    filteredGuestData.forEach(g => { let qrObj = g.fullData || {}; let row = currentQuestions.map(q => '"' + (qrObj[q.id] || "").toString().replace(/"/g, '""') + '"'); row.push(g.kategori, g.status, g.souvenir); csvContent += row.join(",") + "\n"; });
-    let encodedUri = encodeURI(csvContent); let link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", 'Rekap_' + eventTitle.replace(/ /g, '_') + '.csv'); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    if (filteredGuestData.length === 0) { 
+        Swal.fire('Kosong', 'Tidak ada data untuk diexport.', 'info'); 
+        return; 
+    }
+
+    // 1. Ambil Nama & Tanggal Event
+    let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
+    let eventDate = document.getElementById('adminEventDate')?.value || "4 Juli 2026";
+
+    // 2. Kalkulasi Matematika Ringkasan (Termasuk Belum Hadir)
+    let totalHadir = 0;
+    let totalSouvenir = 0;
+    let totalVIP = 0;
+    let totalReguler = 0;
+    let totalBelumHadir = 0;
+
+    filteredGuestData.forEach(g => {
+        if (g.status === 'Hadir' || g.status === 'Sudah Hadir') {
+            totalHadir++;
+            if (g.kategori === 'VIP') totalVIP++;
+            else totalReguler++;
+        } else {
+            totalBelumHadir++; // Hitung tamu yang statusnya bukan Hadir
+        }
+        
+        if (g.souvenir === 'Sudah Ambil' || g.souvenir === 'Sudah') {
+            totalSouvenir++;
+        }
+    });
+
+    // 3. Susun Header Kolom Tabel
+    let headers = currentQuestions.map(q => q.label);
+    headers.push("Kategori", "Status Kehadiran", "Status " + dynamicSouvenirLabel);
+
+    // 4. Susun Konten CSV (Dilengkapi Summary Box di Baris Atas)
+    let csvContent = "data:text/csv;charset=utf-8,\ufeff"; // BOM agar Excel bisa membaca format text dengan rapi
+    
+    // --- AREA SUMMARY HEADER CSV ---
+    csvContent += "LAPORAN REKAPITULASI DATA TAMU (TAMOO)\n";
+    csvContent += "Nama Event:," + eventTitle.replace(/,/g, "") + "\n";
+    csvContent += "Tanggal Pelaksanaan:," + eventDate.replace(/,/g, "") + "\n\n";
+    
+    csvContent += "RINGKASAN KEHADIRAN\n";
+    csvContent += "Total Tamu Hadir:," + totalHadir + " Orang\n";
+    csvContent += "Total Belum Hadir:," + totalBelumHadir + " Orang\n";
+    csvContent += "Total Ambil Souvenir:," + totalSouvenir + " Pcs\n";
+    csvContent += "Total Tamu VIP Hadir:," + totalVIP + " Orang\n";
+    csvContent += "Total Tamu Reguler Hadir:," + totalReguler + " Orang\n\n";
+    
+    // --- AREA DATA TABEL UTAMA ---
+    // Header tabel
+    csvContent += headers.map(h => '"' + h.replace(/"/g, '""') + '"').join(",") + "\n";
+
+    // Isi baris tamu
+    filteredGuestData.forEach(g => { 
+        let qrObj = g.fullData || {}; 
+        // Ambil jawaban custom form
+        let row = currentQuestions.map(q => '"' + (qrObj[q.id] || "").toString().replace(/"/g, '""') + '"'); 
+        // Tambahkan kolom kategori, status, dan souvenir
+        row.push('"' + (g.kategori || "Reguler") + '"', '"' + (g.status || "Belum Hadir") + '"', '"' + (g.souvenir || "Belum Ambil") + '"'); 
+        
+        csvContent += row.join(",") + "\n"; 
+    });
+
+    // 5. Eksekusi Unduh File otomatis
+    let encodedUri = encodeURI(csvContent); 
+    let link = document.createElement("a"); 
+    link.setAttribute("href", encodedUri); 
+    link.setAttribute("download", 'Rekap_TAMOO_' + eventTitle.replace(/\s+/g, '_') + '.csv'); 
+    document.body.appendChild(link); 
+    link.click(); 
+    document.body.removeChild(link);
 }
 
 function exportPDF() {
