@@ -573,20 +573,29 @@ function exportPDF() {
     let eventTitle = document.getElementById('adminEventTitle') ? document.getElementById('adminEventTitle').value : "LAPORAN TAMU";
     let eventDate = document.getElementById('adminEventDate') ? document.getElementById('adminEventDate').value : "4 Juli 2026";
 
-    // 2. Kalkulasi Matematika Ringkasan Data (Termasuk Belum Hadir)
-    let totalHadir = 0;
+    // 2. Kalkulasi Matematika Ringkasan Data Ganda (Nama Terdaftar vs Jumlah Orang)
+    let totalNamaHadir = 0;       // Menghitung jumlah baris/nama yang scan
+    let totalKehadiranTamu = 0;   // Menghitung total manusia riil (Tamu + Pendamping)
     let totalSouvenir = 0;
-    let totalVIP = 0;
-    let totalReguler = 0;
-    let totalBelumHadir = 0;
+    let totalVIP = 0;             // Total orang VIP
+    let totalReguler = 0;         // Total orang Reguler
+    let totalBelumHadir = 0;      // Total nama belum scan
 
     filteredGuestData.forEach(g => {
+        // Logika Fallback: Jika jumlahTamu tidak diisi/tidak ada di form, otomatis dihitung 1
+        let jumlahTamu = parseInt(g.jumlahTamu) || 1;
+
         if (g.status === 'Hadir' || g.status === 'Sudah Hadir') {
-            totalHadir++;
-            if (g.kategori === 'VIP') totalVIP++;
-            else totalReguler++;
+            totalNamaHadir++;
+            totalKehadiranTamu += jumlahTamu;
+            
+            if (g.kategori === 'VIP') {
+                totalVIP += jumlahTamu;
+            } else {
+                totalReguler += jumlahTamu;
+            }
         } else {
-            totalBelumHadir++;
+            totalBelumHadir++; // Menghitung nama terdaftar yang belum scan
         }
         
         if (g.souvenir === 'Sudah Ambil' || g.souvenir === 'Sudah') {
@@ -594,13 +603,15 @@ function exportPDF() {
         }
     });
 
-    // 3. Bangun struktur baris tabel data tamu secara dinamis
+    // 3. Bangun struktur baris tabel data tamu secara dinamis (Termasuk Kolom Jumlah)
     let tableRowsHtml = '';
     filteredGuestData.forEach((g, idx) => {
+        let jumlahTamu = parseInt(g.jumlahTamu) || 1;
         tableRowsHtml += `
             <tr>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${idx + 1}</td>
                 <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">${g.primaryValue || '-'}</td>
+                <td style="text-align:center; padding:8px; border:1px solid #ddd; font-weight:bold; color:#846924;">${jumlahTamu}</td>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.kategori || 'Reguler'}</td>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.status || 'Belum Hadir'}</td>
                 <td style="text-align:center; padding:8px; border:1px solid #ddd;">${g.souvenir || 'Belum Ambil'}</td>
@@ -608,7 +619,7 @@ function exportPDF() {
         `;
     });
 
-    // 4. Buka dokumen print secara aman tanpa diblokir oleh pop-up browser
+    // 4. Buka dokumen print secara aman
     const printWindow = window.open('', '_blank');
     
     printWindow.document.write(`
@@ -618,28 +629,31 @@ function exportPDF() {
             <style>
                 body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; line-height: 1.4; text-align: center; }
                 
-                /* Branding TAMOO - Warna Emas */
-                .app-branding { font-size: 15px; font-weight: bold; color: #846924; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
+                /* Branding TAMOO - Rata Tengah, Font Proporsional Emas */
+                .app-branding { font-size: 14px; font-weight: bold; color: #846924; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
                 
-                /* Header Utama */
-                .header-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; color: #111; }
-                .sub-title { font-size: 13px; color: #555; margin-bottom: 25px; border-bottom: 1px solid #e0e6ed; padding-bottom: 15px; display: inline-block; width: 80%; }
+                /* Header Utama Rata Tengah */
+                .header-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; color: #111; text-align: center; }
+                .sub-title { font-size: 13px; color: #555; margin-bottom: 25px; border-bottom: 1px solid #e0e6ed; padding-bottom: 15px; display: inline-block; width: 85%; text-align: center; }
                 
-                /* Summary Container - Background Krem Keemasan */
+                /* Summary Container Dua Kolom - Background Krem Keemasan */
                 .summary-container { background-color: #fdfaf3; border: 1px solid #f0e6d2; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: inline-block; text-align: left; width: 85%; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-                .summary-box { display: inline-block; vertical-align: top; width: 45%; margin-right: 2%; }
+                .summary-box { display: inline-block; vertical-align: top; width: 48%; }
                 .summary-box p { margin: 6px 0; font-size: 13px; color: #444; }
-                .summary-box strong { color: #846924; font-size: 14px; } /* Angka sukses warna Emas */
-                .summary-box .text-danger { color: #c5221f; font-size: 14px; } /* Angka belum hadir warna Merah */
+                .summary-box strong { color: #846924; font-size: 13px; }
+                .summary-box .text-danger { color: #c5221f; font-size: 13px; }
                 
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
                 th { background-color: #846924; color: white; padding: 10px; font-size: 12px; text-transform: uppercase; border: 1px solid #846924; }
                 td { padding: 8px; border: 1px solid #ddd; font-size: 11px; }
                 
-                /* Footer RAMATLOKA */
+                /* Footer RAMATLOKA - Pojok Kanan Bawah */
                 .footer-brand { position: fixed; bottom: 20px; right: 20px; font-size: 11px; color: #888; font-style: italic; font-weight: bold; letter-spacing: 1px; }
                 
-                @media print { body { padding: 0; } }
+                @media print { 
+                    body { padding: 0; } 
+                    .summary-container { width: 100%; }
+                }
             </style>
         </head>
         <body>
@@ -651,11 +665,12 @@ function exportPDF() {
 
             <div class="summary-container">
                 <div class="summary-box">
-                    <p>Total Kehadiran: <strong>${totalHadir} Orang</strong></p>
-                    <p>Total Belum Hadir: <span class="text-danger"><strong>${totalBelumHadir} Orang</strong></span></p>
+                    <p>Total Kehadiran Name Terdaftar: <strong>${totalNamaHadir} Nama</strong></p>
+                    <p>Total Kehadiran Tamu: <strong>${totalKehadiranTamu} Orang</strong></p>
                     <p>Total Ambil Souvenir: <strong>${totalSouvenir} Pcs</strong></p>
                 </div>
-                <div class="summary-box">
+                <div class="summary-box" style="padding-left: 4%;">
+                    <p>Total Belum Hadir: <span class="text-danger"><strong>${totalBelumHadir} Nama</strong></span></p>
                     <p>Total Tamu VIP Hadir: <strong>${totalVIP} Orang</strong></p>
                     <p>Total Tamu Reguler Hadir: <strong>${totalReguler} Orang</strong></p>
                 </div>
@@ -666,9 +681,10 @@ function exportPDF() {
                     <tr>
                         <th style="width: 5%; text-align:center;">No</th>
                         <th>Nama Lengkap Tamu</th>
-                        <th style="width: 15%; text-align:center;">Kategori</th>
-                        <th style="width: 20%; text-align:center;">Status Kehadiran</th>
-                        <th style="width: 20%; text-align:center;">Status Souvenir</th>
+                        <th style="width: 10%; text-align:center;">Jumlah</th>
+                        <th style="width: 12%; text-align:center;">Kategori</th>
+                        <th style="width: 18%; text-align:center;">Status Kehadiran</th>
+                        <th style="width: 18%; text-align:center;">Status Souvenir</th>
                     </tr>
                 </thead>
                 <tbody>
