@@ -157,3 +157,23 @@ body:not(.tv-mode) { padding-bottom: 30px !important; }
     .main-card-wide { padding: 40px 15px 30px 15px !important; margin-bottom: 100px !important; }
     .btn-logout { right: 70px; } 
 }
+
+/* =======================================================
+   FIX KOTAK ANGKA POPUP TAMU AGAR TIDAK TERPOTONG DI PC 
+   ======================================================= */
+
+/* 1. Menghilangkan panah atas/bawah bawaan browser PC */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 2. Menyesuaikan lebar kotak agar angka 2 digit lega (Firefox & Chrome) */
+input[type="number"] {
+    -moz-appearance: textfield;
+    min-width: 60px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    text-align: center;
+}
