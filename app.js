@@ -1011,19 +1011,27 @@ function startScannerEngine() {
     html5QrCode.start(
         { facingMode: currentFacingMode },
         config,
-        (decodedText) => {
+       (decodedText) => {
             closeCameraModal(); 
             if (currentScanTarget === "checkin") {
                 let inputCheckin = document.getElementById('usbScannerInput');
                 if (inputCheckin) {
                     inputCheckin.value = decodedText;
-                    if (typeof processDataKehadiran === "function") processDataKehadiran(decodedText);
+                    if (typeof processDataKehadiran === "function") {
+                        processDataKehadiran(decodedText);
+                        // Jeda 800ms agar petugas sempat melihat teksnya masuk, lalu otomatis bersih otomatis!
+                        setTimeout(() => { inputCheckin.value = ''; }, 800);
+                    }
                 }
             } else if (currentScanTarget === "souvenir") {
                 let inputSouvenir = document.getElementById('usbScannerSouvenirInput');
                 if (inputSouvenir) {
                     inputSouvenir.value = decodedText;
-                    if (typeof processDataSouvenir === "function") processDataSouvenir(decodedText);
+                    if (typeof processDataSouvenir === "function") {
+                        processDataSouvenir(decodedText);
+                        // Jeda 800ms agar petugas sempat melihat teksnya masuk, lalu otomatis bersih otomatis!
+                        setTimeout(() => { inputSouvenir.value = ''; }, 800);
+                    }
                 }
             }
         },
