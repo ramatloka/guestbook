@@ -53,8 +53,20 @@
         <div class="tab-badge" id="regTabBadge"><i class="fas fa-user-edit"></i> REGISTRASI TAMU</div>
         <div id="dynamicFormContainer" style="margin-top: 10px;">Memuat Formulir...</div>
         <button class="btn-submit" onclick="confirmTamu()" id="btnSubmitForm">DAPATKAN QR CODE</button>
+        
+        <div id="pesanSuksesPublik" style="display: none; text-align: center; padding: 40px 20px; background: #fdfaf3; border: 2px dashed #b39343; border-radius: 12px; margin-top: 15px;">
+          <i class="fas fa-check-circle" style="font-size: 3rem; color: #107c41; margin-bottom: 15px;"></i>
+          <h2 style="color: #846924; font-family: 'Playfair Display', serif; margin: 0 0 10px 0;">REGISTRASI BERHASIL</h2>
+          <p style="color: #333; font-weight: 600; font-size: 0.95rem; line-height: 1.5; margin-bottom: 5px;">
+            Terima kasih <strong id="teksNamaTamu" style="color: #107c41; font-size: 1.1rem;"></strong>,<br>Anda telah terdaftar di acara:
+          </p>
+          <p id="teksEventSukses" style="color: #666; font-size: 0.85rem; font-weight: 700; margin-bottom: 20px;"></p>
+          <p style="color: #846924; font-size: 0.8rem; font-weight: 700; padding: 10px; background: rgba(179, 147, 67, 0.1); border-radius: 8px;">
+            <i class="fas fa-info-circle"></i> Pastikan Anda sudah mengunduh e-Ticket (QR Code). Silakan tunjukkan kepada petugas di pintu masuk nanti.
+          </p>
+        </div>
+
         <div class="branding-text">RAMATLOKA</div>
-      </div>
 
       <div id="secPetugas" class="section" style="position: relative;">
         <div class="tab-badge"><i class="fas fa-qrcode"></i> MODE SCAN CHECK-IN</div>
