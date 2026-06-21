@@ -371,9 +371,39 @@ function confirmTamu() {
       Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       google.script.run.withSuccessHandler((res) => { 
           if(res.status === 'success') {
-              showQrPopup(data[currentQuestions[0].id] || "", res.qrId);
-              currentQuestions.forEach(q => { if(q.type === 'radio' || q.type === 'checkbox') { let els = document.querySelectorAll('input[name="field_' + q.id + '"]'); els.forEach(e => e.checked = false); } else { let field = document.getElementById('field_' + q.id); if (field) field.value = ''; } });
-          } else { Swal.fire('Gagal', res.message, 'error').then(() => loadForm()); }
+              // Tangkap nama tamu dari form pertama
+              let namaTamu = data[currentQuestions[0].id] || "Tamu";
+              showQrPopup(namaTamu, res.qrId);
+              
+              if (IS_PUBLIC_MODE) {
+                  // --- SKENARIO PUBLIK: KUNCI FORM & MUNCULKAN PESAN ---
+                  // 1. Sembunyikan Form dan Tombol Submit
+                  document.getElementById('dynamicFormContainer').style.display = 'none';
+                  document.getElementById('btnSubmitForm').style.display = 'none';
+                  
+                  // 2. Masukkan Nama dan Detail Acara ke Pesan Sukses
+                  document.getElementById('teksNamaTamu').innerText = namaTamu;
+                  let eventName = document.getElementById('pubEventName').innerText;
+                  let eventDateLoc = document.getElementById('pubEventDateLoc').innerText;
+                  document.getElementById('teksEventSukses').innerHTML = eventName + "<br>" + eventDateLoc;
+                  
+                  // 3. Tampilkan Kotak Pesan Sukses
+                  document.getElementById('pesanSuksesPublik').style.display = 'block';
+              } else {
+                  // --- SKENARIO PETUGAS: KOSONGKAN FORM (Siap input lagi) ---
+                  currentQuestions.forEach(q => { 
+                      if(q.type === 'radio' || q.type === 'checkbox') { 
+                          let els = document.querySelectorAll('input[name="field_' + q.id + '"]'); 
+                          els.forEach(e => e.checked = false); 
+                      } else { 
+                          let field = document.getElementById('field_' + q.id); 
+                          if (field) field.value = ''; 
+                      } 
+                  });
+              }
+          } else { 
+              Swal.fire('Gagal', res.message, 'error').then(() => loadForm()); 
+          }
       }).withFailureHandler(err => { Swal.fire({title: 'Error', text: err.message, icon: 'error'}); }).simpanPendaftaran(data);
     }
   });
