@@ -889,11 +889,30 @@ function processDataKehadiran(qrData, force = false) {
             let badgeVipHtml = r.kategori === 'VIP' ? '<div style="display:inline-block; background:var(--gold-gradient); color:#fff; padding:6px 20px; border-radius:20px; font-weight:900; font-size:0.75rem; letter-spacing:3px; margin-bottom:15px; box-shadow:0 5px 15px rgba(0,0,0,0.15); text-transform:uppercase;">Tamu VIP</div>' : ''; let prefixHtml = greetingPrefix ? '<div style="font-family:\'Montserrat\', sans-serif; font-size:0.9rem; color:var(--text-muted); font-weight:700;">' + greetingPrefix + '</div>' : ''; let nameHtml = r.namaTamu; if (greetingSuffix) { nameHtml += '<br><span style="font-family:\'Montserrat\', sans-serif; font-size:1.1rem; font-weight:600; color:var(--text-muted); text-transform:none; letter-spacing:0;">' + greetingSuffix + '</span>'; }
             let defaultCount = parseInt(r.jumlahTamu) || 1;
             let counterHtml = `<div style="margin-top:15px; background:var(--bg-color); padding:15px; border-radius:12px; border:1px solid var(--border-color);"><div style="font-family:'Montserrat', sans-serif; font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase;">Sesuaikan Jumlah Hadir:</div><div style="display:flex; justify-content:center; align-items:center; gap:15px;"><button type="button" onclick="let inp=document.getElementById('swalCountInput'); if(inp.value>1) inp.value--;" style="width:40px; height:40px; border-radius:50%; border:none; background:#c5221f; color:#fff; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-minus"></i></button><input type="number" id="swalCountInput" value="${defaultCount}" style="width:70px; height:45px; text-align:center; font-family:'Montserrat', sans-serif; font-size:1.5rem; font-weight:900; border:2px solid var(--border-color); border-radius:8px; color:var(--text-main); outline:none;"><button type="button" onclick="let inp=document.getElementById('swalCountInput'); inp.value++;" style="width:40px; height:40px; border-radius:50%; border:none; background:#107c41; color:#fff; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-plus"></i></button></div></div>`;
-            Swal.fire({ 
-                title: 'Selamat Datang', html: '<div style="margin-top:10px;">' + badgeVipHtml + '</div>' + prefixHtml + '<div style="font-family:\'Playfair Display\', serif; color:var(--gold-dark); font-weight:900; font-size:2.5rem; line-height:1.1; margin-top:5px; margin-bottom:5px;">' + nameHtml + '</div>' + counterHtml + (extraHtmlScanner !== "" ? '<div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px;">' + extraHtmlScanner + '</div>' : ""), icon: 'success', showConfirmButton: true, confirmButtonText: '<i class="fas fa-check-circle"></i> KONFIRMASI (ENTER)', customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal' }, preConfirm: () => { let inp = document.getElementById('swalCountInput'); return inp ? parseInt(inp.value) : defaultCount; }
-            }).then((res) => { 
-                let finalCount = res.value || defaultCount; if (finalCount !== defaultCount) { google.script.run.withSuccessHandler(() => { fetchTotalHadir(); }).updateJumlahTamu(r.rawData, finalCount); } else { fetchTotalHadir(); } let scn = document.getElementById('usbScannerInput'); if(scn) scn.focus(); 
-            });
+           // --- KODE BARU POP-UP SOUVENIR ---
+        playSuccessSound(); 
+        Swal.fire({ 
+            title: 'BERHASIL KLAIM!', 
+            html: '<div style="font-family:\'Playfair Display\', serif; color:#1967d2; font-weight:900; font-size:2rem; line-height:1.1; margin-top:5px; margin-bottom:10px;">' + r.namaTamu + '</div><p style="font-weight:bold; color:#555;">Silakan berikan ' + dynamicSouvenirLabel + ' kepada tamu.</p>', 
+            icon: 'success', 
+            // timer: 3000 (Timer dimatikan agar petugas bisa milih tombol)
+            showConfirmButton: true, 
+            showDenyButton: true, // <-- TOMBOL BARU AKTIF
+            confirmButtonText: 'OK', 
+            denyButtonText: '<i class="fas fa-camera"></i> SCAN LAGI', // <-- TEKS TOMBOL JALUR PINTAS
+            customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', denyButton: 'btn-action-swal' } 
+        }).then((res) => { 
+            fetchSouvenirStats(); 
+            
+            // --- LOGIKA CABANG ---
+            if (res.isDenied) {
+                // Langsung tembak kamera mode souvenir lagi
+                setTimeout(() => { openCameraModal('souvenir'); }, 300);
+            } else {
+                let scn = document.getElementById('usbScannerSouvenirInput'); 
+                if(scn) scn.focus(); 
+            }
+        });
         } else { 
             playErrorSound(); let waktuText = r.waktuHadir ? '<br><span style="font-size:0.95rem; color:#c5221f; font-weight:bold;">pada ' + r.waktuHadir + '</span>' : ''; let jumlahHtmlExists = (r.jumlahTamu && r.jumlahTamu !== "") ? '<br><span style="font-size:0.95rem; color:var(--gold-dark); font-weight:bold;"><i class="fas fa-users"></i> Tercatat Membawa: ' + r.jumlahTamu + '</span>' : '';
             Swal.fire({ title: 'Perhatian', html: '<div style="font-size:1.1rem; line-height:1.4;"><b>' + r.namaTamu + '</b> sudah check-in sebelumnya.' + waktuText + jumlahHtmlExists + '</div>', icon: 'warning', showCancelButton: true, confirmButtonText: 'Paksa Catat', customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' } }).then(res => { if(res.isConfirmed) processDataKehadiran(r.rawData, true); else { let scn = document.getElementById('usbScannerInput'); if(scn) scn.focus(); }});
@@ -906,7 +925,26 @@ function processDataSouvenir(qrData, force = false) {
   Swal.fire({ title: 'Cek ' + dynamicSouvenirLabel + '...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
   google.script.run.withSuccessHandler(r => {
       if(r.status === 'success') {
-        playSuccessSound(); Swal.fire({ title: 'BERHASIL KLAIM!', html: '<div style="font-family:\'Playfair Display\', serif; color:#1967d2; font-weight:900; font-size:2rem; line-height:1.1; margin-top:5px; margin-bottom:10px;">' + r.namaTamu + '</div><p style="font-weight:bold; color:#555;">Silakan berikan ' + dynamicSouvenirLabel + ' kepada tamu.</p>', icon: 'success', timer: 3000, showConfirmButton: false, customClass: { popup: 'luxury-popup', title: 'luxury-title' } }).then(() => { fetchSouvenirStats(); let scn = document.getElementById('usbScannerSouvenirInput'); if(scn) scn.focus(); });
+        playSuccessSound(); 
+        Swal.fire({ 
+            title: 'BERHASIL KLAIM!', 
+            html: '<div style="font-family:\'Playfair Display\', serif; color:#1967d2; font-weight:900; font-size:2rem; line-height:1.1; margin-top:5px; margin-bottom:10px;">' + r.namaTamu + '</div><p style="font-weight:bold; color:#555;">Silakan berikan ' + dynamicSouvenirLabel + ' kepada tamu.</p>', 
+            icon: 'success', 
+            showConfirmButton: true, 
+            showDenyButton: true, 
+            confirmButtonText: 'OK', 
+            denyButtonText: '<i class="fas fa-camera"></i> SCAN LAGI', 
+            customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', denyButton: 'btn-action-swal' } 
+        }).then((res) => { 
+            fetchSouvenirStats(); 
+            
+            if (res.isDenied) {
+                setTimeout(() => { openCameraModal('souvenir'); }, 300);
+            } else {
+                let scn = document.getElementById('usbScannerSouvenirInput'); 
+                if(scn) scn.focus(); 
+            }
+        });
      } else if(r.status === 'exists') { 
         playErrorSound(); let waktuText = r.waktuSouvenir ? '<br><span style="font-size:0.95rem; color:#c5221f; font-weight:bold;">pada ' + r.waktuSouvenir + '</span>' : '';
         Swal.fire({ title: 'SUDAH DIAMBIL!', html: '<div style="font-family:\'Playfair Display\', serif; color:#c5221f; font-weight:900; font-size:1.8rem; line-height:1.1; margin-top:5px; margin-bottom:10px;">' + r.namaTamu + '</div><p style="font-weight:bold; margin-bottom:5px;">Tamu ini sudah pernah mengklaim ' + dynamicSouvenirLabel + '.</p>' + waktuText, icon: 'error', showCancelButton: true, confirmButtonText: 'Paksa Ambil', customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' } }).then(res => { if(res.isConfirmed) processDataSouvenir(r.rawData, true); else { let scn = document.getElementById('usbScannerSouvenirInput'); if(scn) scn.focus(); }});
