@@ -920,7 +920,27 @@ function processDataKehadiran(qrData, force = false) {
             playErrorSound(); let waktuText = r.waktuHadir ? '<br><span style="font-size:0.95rem; color:#c5221f; font-weight:bold;">pada ' + r.waktuHadir + '</span>' : ''; let jumlahHtmlExists = (r.jumlahTamu && r.jumlahTamu !== "") ? '<br><span style="font-size:0.95rem; color:var(--gold-dark); font-weight:bold;"><i class="fas fa-users"></i> Tercatat Membawa: ' + r.jumlahTamu + '</span>' : '';
             Swal.fire({ title: 'Perhatian', html: '<div style="font-size:1.1rem; line-height:1.4;"><b>' + r.namaTamu + '</b> sudah check-in sebelumnya.' + waktuText + jumlahHtmlExists + '</div>', icon: 'warning', showCancelButton: true, confirmButtonText: 'Paksa Catat', customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' } }).then(res => { if(res.isConfirmed) processDataKehadiran(r.rawData, true); else { let scn = document.getElementById('usbScannerInput'); if(scn) scn.focus(); }});
         }
-      } else { playErrorSound(); Swal.fire({title: 'Error', text: r.message, icon: 'error'}); }
+      // >>> KODE BARU ERROR CHECK-IN <<<
+        } else { 
+            playErrorSound(); 
+            Swal.fire({
+                title: 'Error', 
+                text: r.message, 
+                icon: 'error',
+                showConfirmButton: true, 
+                showDenyButton: true, 
+                confirmButtonText: 'OK', 
+                denyButtonText: '<i class="fas fa-camera"></i> SCAN LAGI', 
+                customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', denyButton: 'btn-action-swal' } 
+            }).then((res) => { 
+                if (res.isDenied) {
+                    setTimeout(() => { openCameraModal('checkin'); }, 300);
+                } else {
+                    let scn = document.getElementById('usbScannerInput'); 
+                    if(scn) scn.focus(); 
+                }
+            });
+        }
   }).withFailureHandler(err => { playErrorSound(); Swal.fire('Error Server', err.message, 'error'); }).processScan(qrData, force);
 }
 
@@ -951,7 +971,27 @@ function processDataSouvenir(qrData, force = false) {
      } else if(r.status === 'exists') { 
         playErrorSound(); let waktuText = r.waktuSouvenir ? '<br><span style="font-size:0.95rem; color:#c5221f; font-weight:bold;">pada ' + r.waktuSouvenir + '</span>' : '';
         Swal.fire({ title: 'SUDAH DIAMBIL!', html: '<div style="font-family:\'Playfair Display\', serif; color:#c5221f; font-weight:900; font-size:1.8rem; line-height:1.1; margin-top:5px; margin-bottom:10px;">' + r.namaTamu + '</div><p style="font-weight:bold; margin-bottom:5px;">Tamu ini sudah pernah mengklaim ' + dynamicSouvenirLabel + '.</p>' + waktuText, icon: 'error', showCancelButton: true, confirmButtonText: 'Paksa Ambil', customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' } }).then(res => { if(res.isConfirmed) processDataSouvenir(r.rawData, true); else { let scn = document.getElementById('usbScannerSouvenirInput'); if(scn) scn.focus(); }});
-      } else { playErrorSound(); Swal.fire({title: 'Error', text: r.message, icon: 'error'}); }
+      // >>> KODE BARU ERROR SOUVENIR <<<
+        } else { 
+            playErrorSound(); 
+            Swal.fire({
+                title: 'Error', 
+                text: r.message, 
+                icon: 'error',
+                showConfirmButton: true, 
+                showDenyButton: true, 
+                confirmButtonText: 'OK', 
+                denyButtonText: '<i class="fas fa-camera"></i> SCAN LAGI', 
+                customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', denyButton: 'btn-action-swal' } 
+            }).then((res) => { 
+                if (res.isDenied) {
+                    setTimeout(() => { openCameraModal('souvenir'); }, 300);
+                } else {
+                    let scn = document.getElementById('usbScannerSouvenirInput'); 
+                    if(scn) scn.focus(); 
+                }
+            });
+        }
   }).withFailureHandler(err => { playErrorSound(); Swal.fire('Error Server', err.message, 'error'); }).processScanSouvenir(qrData, force);
 }
 
