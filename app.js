@@ -38,7 +38,7 @@ const google = {
         tambahTamuManual(formData, kategoriTamu) { this._call('tambahTamuManual', { formData, kategoriTamu }); }
         simpanPendaftaranBulk(guestsData) { this._call('simpanPendaftaranBulk', { guestsData }); }
         toggleGuestKategori(primaryValue) { this._call('toggleGuestKategori', { primaryValue }); }
-        toggleGuestKehadiran(qrData) { this._call('toggleGuestKehadiran', { qrData }); }
+        toggleGuestKehadiran(qrData) { return this._call('toggleGuestKehadiran', { qrData }); }
         getGuestList() { this._call('getGuestList'); }
         processScan(qrData, forceRecord) { this._call('processScan', { qrData, forceRecord }); }
         processScanSouvenir(qrData, forceRecord) { this._call('processScanSouvenir', { qrData, forceRecord }); }
@@ -756,16 +756,16 @@ function toggleKehadiranStatus(name, qrData) {
     }).then((result) => { 
         if (result.isConfirmed) { 
             Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
-            google.script.run.withSuccessHandler((res) => { 
-                if(res.status === 'success') {
+            
+            // MENGGUNAKAN ENGINE BRIDGE YANG BENAR (BUKAN google.script.run)
+            new Engine().toggleGuestKehadiran(qrData)
+                .success(res => {
                     Swal.close(); 
-                    loadRekapData(); // Otomatis refresh tabel dan angka counter atas
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
-            }).withFailureHandler(err => {
-                Swal.fire('Error', err.message, 'error');
-            }).toggleGuestKehadiran(qrData); 
+                    loadRekapData(); // Refresh data otomatis
+                })
+                .failure(err => {
+                    Swal.fire('Error', err.message || 'Gagal mengubah status', 'error');
+                });
         } 
     }); 
 }
