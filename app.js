@@ -744,30 +744,32 @@ function exportPDF() {
 }
 
 function toggleVipStatus(name) { Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); google.script.run.withSuccessHandler(() => { Swal.close(); loadRekapData(); }).toggleGuestKategori(name); }
-function toggleKehadiranStatus(name, qrData) { 
-    Swal.fire({ 
-        title: 'Ubah Kehadiran?', 
-        text: 'Anda akan merubah status kehadiran untuk tamu: ' + name, 
-        icon: 'question', 
-        showCancelButton: true, 
-        confirmButtonText: 'Ya, Ubah Status', 
+function toggleKehadiranStatus(name, qrData) {
+    Swal.fire({
+        title: 'Ubah Kehadiran?',
+        text: 'Anda akan merubah status kehadiran untuk tamu: ' + name,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Ubah Status',
         cancelButtonText: 'Batal',
-        customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' } 
-    }).then((result) => { 
-        if (result.isConfirmed) { 
-            Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
+        customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             
-            // MENGGUNAKAN ENGINE BRIDGE YANG BENAR (BUKAN google.script.run)
-            new Engine().toggleGuestKehadiran(qrData)
-                .success(res => {
-                    Swal.close(); 
-                    loadRekapData(); // Refresh data otomatis
-                })
-                .failure(err => {
-                    Swal.fire('Error', err.message || 'Gagal mengubah status', 'error');
-                });
-        } 
-    }); 
+            // MENGGUNAKAN ENGINE BRIDGE ASLI BAWAAN (google.script.run)
+            google.script.run.withSuccessHandler((res) => {
+                if(res.status === 'success') {
+                    Swal.close();
+                    loadRekapData(); // Otomatis refresh data rekap
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }).withFailureHandler(err => {
+                Swal.fire('Error', err.message, 'error');
+            }).toggleGuestKehadiran(qrData);
+        }
+    });
 }
 
 function openAddGuestModal() {
