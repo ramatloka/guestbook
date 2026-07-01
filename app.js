@@ -38,6 +38,7 @@ const google = {
         tambahTamuManual(formData, kategoriTamu) { this._call('tambahTamuManual', { formData, kategoriTamu }); }
         simpanPendaftaranBulk(guestsData) { this._call('simpanPendaftaranBulk', { guestsData }); }
         toggleGuestKategori(primaryValue) { this._call('toggleGuestKategori', { primaryValue }); }
+        toggleGuestKehadiran(qrData) { this._call('toggleGuestKehadiran', { qrData }); }
         getGuestList() { this._call('getGuestList'); }
         processScan(qrData, forceRecord) { this._call('processScan', { qrData, forceRecord }); }
         processScanSouvenir(qrData, forceRecord) { this._call('processScanSouvenir', { qrData, forceRecord }); }
@@ -509,7 +510,7 @@ function renderRekapRows() {
   let totalPages = Math.ceil(filteredGuestData.length / rowsPerPage); if(currentPage < 1) currentPage = 1; if(currentPage > totalPages) currentPage = totalPages; let startIndex = (currentPage - 1) * rowsPerPage; let endIndex = startIndex + rowsPerPage; let currentView = filteredGuestData.slice(startIndex, endIndex);
   currentView.forEach(g => {
     let badgKategori = g.kategori === 'VIP' ? 'badge-vip' : 'badge-reg'; let badgStatus = g.status === 'Hadir' ? 'badge-hadir' : 'badge-belum'; let badgSouv = g.souvenir === 'Sudah Ambil' ? 'badge-souv-sudah' : 'badge-souv-belum'; let nameForPrint = g.primaryValue + (g.kategori === 'VIP' ? " (VIP)" : ""); let safeNameForPrint = nameForPrint.replace(/'/g, "\\'").replace(/"/g, '"'); let safeOriginalName = g.primaryValue.replace(/'/g, "\\'").replace(/"/g, '"'); let safeQr = g.qrString.replace(/'/g, "\\'").replace(/"/g, '"'); let qrUrl = "https://quickchart.io/qr?size=500&margin=1&text=" + encodeURIComponent(g.qrString); let isChecked = selectedGuestsForZip.has(g.qrString) ? 'checked' : '';
-    html += '<tr><td style="text-align: center;"><input type="checkbox" value="' + safeQr + '" ' + isChecked + ' onclick="toggleSelectGuest(\'' + safeQr + '\', this.checked)" style="transform: scale(1.2); cursor: pointer;"></td><td style="font-weight:700;">' + g.primaryValue + '<br><small style="color:var(--gold-dark); font-weight:600; font-size:0.7rem;"><i class="fas fa-users"></i> ' + g.jumlahTamu + ' Orang</small></td><td><span class="badge-status ' + badgKategori + '">' + g.kategori + '</span></td><td><span class="badge-status ' + badgStatus + '">' + g.status + '</span> <br><span class="badge-status ' + badgSouv + '" style="margin-top:4px;">' + dynamicSouvenirLabel + ': ' + g.souvenir + '</span></td><td style="text-align: center; white-space:nowrap;"><button class="btn-action-icon btn-view-qr" onclick="showQrPopup(\'' + safeNameForPrint + '\', \'' + safeQr + '\')" title="Lihat QR"><i class="fas fa-qrcode"></i></button><button class="btn-action-icon btn-print-qr" onclick="printDigitalTicket(\'' + qrUrl + '\', \'' + safeNameForPrint + '\')" title="Cetak Tiket QR"><i class="fas fa-print"></i></button><button class="btn-action-icon btn-toggle-vip" onclick="toggleVipStatus(\'' + safeOriginalName + '\')" title="Ubah VIP"><i class="fas fa-crown"></i></button><button class="btn-action-icon" style="color:#28a745;" onclick="openMessageTemplate(\'' + safeOriginalName + '\', \'' + safeQr + '\')" title="Copy Pesan Undangan"><i class="fas fa-comment-dots"></i></button></td></tr>';
+   html += '<tr><td style="text-align: center;"><input type="checkbox" value="' + safeQr + '" ' + isChecked + ' onclick="toggleSelectGuest(\'' + safeQr + '\', this.checked)" style="transform: scale(1.2); cursor: pointer;"></td><td style="font-weight:700;">' + g.primaryValue + '<br><small style="color:var(--gold-dark); font-weight:600; font-size:0.7rem;"><i class="fas fa-users"></i> ' + g.jumlahTamu + ' Orang</small></td><td><span class="badge-status ' + badgKategori + '">' + g.kategori + '</span></td><td><span class="badge-status ' + badgStatus + '">' + g.status + '</span> <br><span class="badge-status ' + badgSouv + '" style="margin-top:4px;">' + dynamicSouvenirLabel + ': ' + g.souvenir + '</span></td><td style="text-align: center; white-space:nowrap;"><button class="btn-action-icon" style="color:#0275d8;" onclick="toggleKehadiranStatus(\'' + safeOriginalName + '\', \'' + safeQr + '\')" title="Ubah Status Kehadiran"><i class="fas fa-user-check"></i></button><button class="btn-action-icon btn-view-qr" onclick="showQrPopup(\'' + safeNameForPrint + '\', \'' + safeQr + '\')" title="Lihat QR"><i class="fas fa-qrcode"></i></button><button class="btn-action-icon btn-print-qr" onclick="printDigitalTicket(\'' + qrUrl + '\', \'' + safeNameForPrint + '\')" title="Cetak Tiket QR"><i class="fas fa-print"></i></button><button class="btn-action-icon btn-toggle-vip" onclick="toggleVipStatus(\'' + safeOriginalName + '\')" title="Ubah VIP"><i class="fas fa-crown"></i></button><button class="btn-action-icon" style="color:#28a745;" onclick="openMessageTemplate(\'' + safeOriginalName + '\', \'' + safeQr + '\')" title="Copy Pesan Undangan"><i class="fas fa-comment-dots"></i></button></td></tr>';
   });
   if(tb) tb.innerHTML = html;
   let startCount = startIndex + 1; let endCount = Math.min(endIndex, filteredGuestData.length); let btnPrev = '<button class="btn-page" onclick="changePage(-1)" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fas fa-chevron-left"></i></button>'; let btnNext = '<button class="btn-page" onclick="changePage(1)" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fas fa-chevron-right"></i></button>'; let infoText = '<span>Menampilkan ' + startCount + '-' + endCount + ' dari ' + filteredGuestData.length + '</span>'; let htmlControls = btnPrev + ' ' + infoText + ' ' + btnNext;
@@ -743,6 +744,31 @@ function exportPDF() {
 }
 
 function toggleVipStatus(name) { Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); google.script.run.withSuccessHandler(() => { Swal.close(); loadRekapData(); }).toggleGuestKategori(name); }
+function toggleKehadiranStatus(name, qrData) { 
+    Swal.fire({ 
+        title: 'Ubah Kehadiran?', 
+        text: 'Anda akan merubah status kehadiran untuk tamu: ' + name, 
+        icon: 'question', 
+        showCancelButton: true, 
+        confirmButtonText: 'Ya, Ubah Status', 
+        cancelButtonText: 'Batal',
+        customClass: { popup: 'luxury-popup', title: 'luxury-title', confirmButton: 'btn-action-swal', cancelButton: 'btn-action-swal' } 
+    }).then((result) => { 
+        if (result.isConfirmed) { 
+            Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
+            google.script.run.withSuccessHandler((res) => { 
+                if(res.status === 'success') {
+                    Swal.close(); 
+                    loadRekapData(); // Otomatis refresh tabel dan angka counter atas
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }).withFailureHandler(err => {
+                Swal.fire('Error', err.message, 'error');
+            }).toggleGuestKehadiran(qrData); 
+        } 
+    }); 
+}
 
 function openAddGuestModal() {
   let formHtml = '';
